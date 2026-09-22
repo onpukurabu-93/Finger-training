@@ -5,113 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音の階段 指トレーニング</title>
     <style>
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f6fa;
-            text-align: center;
-            margin: 0;
-            padding: 10px;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: white;
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
-            position: relative;
-        }
-        /* iPad対策：最初にユーザーに踏ませる確実なスタート画面 */
-        #start-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        #big-start-btn {
-            padding: 25px 50px;
-            font-size: 28px;
-            background-color: #ff7675;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 6px 12px rgba(255,118,117,0.4);
-            font-weight: bold;
-        }
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            gap: 5px;
-        }
-        select, .hand-btn {
-            padding: 8px 12px;
-            font-size: 14px;
-            border-radius: 8px;
-            border: 2px solid #ddd;
-            background: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .active-hand {
-            background-color: #ff7675;
-            color: white;
-            border-color: #ff7675;
-        }
-        .status-bar {
-            background: #f1f2f6;
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 14px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-around;
-        }
-        .msg-box {
-            background: #fff9db;
-            border: 2px solid #fab005;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
+        body { font-family: sans-serif; background-color: #f5f6fa; text-align: center; margin: 0; padding: 10px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.05); position: relative; }
+        #start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        #big-start-btn { padding: 25px 50px; font-size: 28px; background-color: #ff7675; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 5px; }
+        select, .hand-btn { padding: 8px 12px; font-size: 14px; border-radius: 8px; border: 2px solid #ddd; background: white; cursor: pointer; font-weight: bold; }
+        .active-hand { background-color: #ff7675; color: white; border-color: #ff7675; }
+        .status-bar { background: #f1f2f6; padding: 8px; border-radius: 10px; font-size: 14px; margin-bottom: 10px; display: flex; justify-content: space-around; }
+        .msg-box { background: #fff9db; border: 2px solid #fab005; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
         .question { font-size: 22px; font-weight: bold; color: #2d3436; line-height: 1.4; }
         .hint { font-size: 18px; color: #ff7675; font-weight: bold; min-height: 24px; margin-top: 5px; }
-
-        .piano-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .bg-image {
-            width: 100%;
-            display: block;
-            border-radius: 10px;
-        }
-        /* 画像下部のカラフルな丸印の鍵盤位置に重なるタッチエリア */
-        .touch-area {
-            position: absolute;
-            bottom: 3.5%; 
-            left: 6.5%;
-            width: 87%;
-            height: 12%;
-            display: flex;
-        }
-        .invisible-key {
-            flex: 1;
-            height: 100%;
-            cursor: pointer;
-            position: relative;
-            background: rgba(0,0,0,0);
-        }
-        /* 各音に対応したライトアップエフェクト */
+        .piano-wrapper { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
+        .bg-image { width: 100%; display: block; border-radius: 10px; }
+        .touch-area { position: absolute; bottom: 3.5%; left: 6.5%; width: 87%; height: 12%; display: flex; }
+        .invisible-key { flex: 1; height: 100%; cursor: pointer; position: relative; background: rgba(0,0,0,0); }
         .light-up-0 { background: rgba(255, 59, 48, 0.4) !important; }
         .light-up-1 { background: rgba(255, 149, 67, 0.4) !important; }
         .light-up-2 { background: rgba(255, 204, 0, 0.4) !important; }
@@ -120,25 +28,19 @@
         .light-up-5 { background: rgba(52, 85, 165, 0.4) !important; }
         .light-up-6 { background: rgba(229, 92, 176, 0.4) !important; }
         .light-up-7 { background: rgba(255, 59, 48, 0.4) !important; }
-
-        .invisible-key.light-up {
-            animation: blink 0.4s infinite alternate;
-            border-radius: 5px;
-        }
+        .invisible-key.light-up { animation: blink 0.4s infinite alternate; border-radius: 5px; }
         @keyframes blink { 0% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- iPad対策スタート画面 -->
     <div id="start-overlay">
         <h2 style="color:#2d3436; margin-bottom:20px;">おとの階段を はじめよう！</h2>
         <button id="big-start-btn" onclick="ipadAudioUnlock()">スタート 🌟</button>
     </div>
 
     <div class="controls">
-        <!-- 指定された連動ルート順（①→⑧→⑨→⑩→③→⑤→⑦→②→④→⑥）に並べたセレクトボックス -->
         <select id="song-select" onchange="changeSong()">
             <option value="1">1. チューリップ (スタート)</option>
             <option value="8">2. 子犬のマーチ</option>
@@ -183,61 +85,24 @@
 </div>
 
 <script>
-    // --- 👑 10曲すべてのデータをカンマと数字で漏れなく手動で1音ずつ書き込みました 👑 ---
-    // notesの数字: 0=ド, 1=レ, 2=ミ, 3=ファ, 4=ソ
-    // fingersの数字: 右手での指番号 (1=親指, 2=人差指, 3=中指, 4=薬指, 5=小指)
-    const songData = {
-        1: { 
-            name: "チューリップ", 
-            notes:, 
-            fingers: [1, 2, 3, 1, 2, 3, 5, 3, 2, 1, 2, 3, 2] 
-        },
-        2: { 
-            name: "ひげじいさん", 
-            notes:, 
-            fingers: [1, 1, 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1] 
-        },
-        3: { 
-            name: "かっこう", 
-            notes:, 
-            fingers: [5, 3, 5, 3, 2, 2, 1] 
-        },
-        4: { 
-            name: "ぶんぶんぶん", 
-            notes:, 
-            fingers: [5, 4, 3, 2, 1, 3, 3, 2, 2, 3, 3, 2, 2, 5, 4, 3, 2, 1] 
-        },
-        5: { 
-            name: "メリーさんの羊", 
-            notes:, 
-            fingers: [3, 2, 1, 2, 3, 3, 3, 2, 2, 2, 3, 5, 5, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 1] 
-        },
-        6: { 
-            name: "聖者の行進", 
-            notes:, 
-            fingers: [1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 3, 1, 3, 2] 
-        },
-        7: { 
-            name: "ちょうちょ", 
-            notes:, 
-            fingers: [5, 3, 3, 4, 2, 2, 1, 2, 3, 4, 5, 5, 5] 
-        },
-        8: { 
-            name: "子犬のマーチ", 
-            notes:, 
-            fingers: [3, 2, 1, 2, 3, 3, 3, 2, 2, 2, 3, 5, 5, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 1] 
-        },
-        9: { 
-            name: "河は呼んでいる", 
-            notes:, 
-            fingers: [1, 2, 3, 1, 2, 3, 5, 3, 2, 1, 2, 3, 2] 
-        },
-        10:{ 
-            name: "糸まき", 
-            notes:, 
-            fingers: [1, 1, 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3] 
-        }
-    };
+    const nameData = "チューリップ,ひげじいさん,かっこう,ぶんぶんぶん,メリーさんの羊,聖者の行進,ちょうちょ,子犬のマーチ,河は呼んでいる,糸まき";
+    const noteData = "0120124210121|00002222444422223333222211110|4223110123444|432102211221143210|2101222111244210122211210|0234023402342021|4223110123444|2101222111244210122211210|0120124210121|0000222244442222";
+    const fingerData = "1231235321232|11113333555533334444333322221|5334221234555|543213322332254321|3212333222355321233322321|1345134513453132|5334221234555|3212333222355321233322321|1231235321232|1111333355553333";
+
+    const songData = {};
+    const names = nameData.split(",");
+    const notesList = noteData.split("|");
+    const fingersList = fingerData.split("|");
+    const idMap =;
+
+    for (let i = 0; i < 10; i++) {
+        let currentId = idMap[i];
+        songData[currentId] = {
+            name: names[i],
+            notes: notesList[i].split("").map(Number),
+            fingers: fingersList[i].split("").map(Number)
+        };
+    }
 
     const nextSongRoute = { 1: 8, 8: 9, 9: 10, 10: 3, 3: 5, 5: 7, 7: 2, 2: 4, 4: 6, 6: 1 };
     const fingerNames = { 1: 'お父さん指', 2: 'お母さん指', 3: 'お兄さん指', 4: 'お姉さん指', 5: '赤ちゃん指' };
@@ -247,29 +112,86 @@
     let currentLevel = 1; 
     let currentSongId = 1;
     let melodyIndex = 0;
-    
     let totalAttempts = 0; 
     let noMistakeCount = 0; 
     let hasMistakeInCurrentTurn = false; 
-
-    let synth = window.speechSynthesis;
     let audioCtx = null;
 
     function ipadAudioUnlock() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const buffer = audioCtx.createBuffer(1, 1, 22050);
-        const source = audioBufferSource = audioCtx.createBufferSource();
+        const source = audioCtx.createBufferSource();
         source.buffer = buffer;
         source.connect(audioCtx.destination);
         source.start(0);
-        
         document.getElementById('start-overlay').style.display = 'none';
         nextNote();
     }
 
     function playTone(freq, duration = 0.4) {
         if (!audioCtx) return;
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
         const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playFullMelody(callback) {
+        const song = songData[currentSongId];
+        let time = audioCtx.currentTime;
+        song.notes.forEach((noteIndex) => {
+            const freq = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25][noteIndex];
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.2, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + 0.35);
+            time += 0.35;
+        });
+        setTimeout(callback, song.notes.length * 350 + 500);
+    }
+
+    function nextNote() {
+        document.querySelectorAll('.invisible-key').forEach(k => {
+            k.classList.remove('light-up');
+            k.className = 'invisible-key'; 
+        });
+        document.getElementById('hint-text').textContent = '';
+        const song = songData[currentSongId];
+
+        if (melodyIndex >= song.notes.length) {
+            totalAttempts++;
+            if (!hasMistakeInCurrentTurn) noMistakeCount++;
+            updateScoreDisplay();
+
+            document.getElementById('question-text').textContent = "「こんな曲になったよ！きいててね！」";
+            playFullMelody(() => {
+                if (totalAttempts >= 5) {
+                    if (noMistakeCount >= 3) {
+                        alert(`🎉 すごい！5回中 ${noMistakeCount} 回ノーミス！レベル2に進むよ！`);
+                        currentLevel = 2;
+                        document.getElementById('level-display').textContent = 'レベル: 2 (すうじモード)';
+                    } else {
+                        alert(`5回おわったよ！ ${noMistakeCount} 回ノーミス！もういちど挑戦してね！`);
+                    }
+                    totalAttempts = 0;
+                    noMistakeCount = 0;
+                } else {
+                    alert('🌟 さいごまで弾けたね！次のチャレンジ！');
+                }
+                
+                if (totalAttempts === 0 && currentLevel === 2) {
+                    currentSongId = nextSongRoute[currentSongId];
+                    document.getElementById('song-select').value = currentSongId;
