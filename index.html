@@ -89,7 +89,6 @@
     const notesStr = ["0,1,2,0,1,2,4,2,1,0,1,2,1", "2,1,0,1,2,2,2,1,1,1,2,4,4,2,1,0,1,2,2,2,1,1,2,1,0", "0,1,2,0,1,2,4,2,1,0,1,2,1", "0,0,0,0,2,2,2,2,4,4,4,4,2,2,2,2", "4,2,2,3,1,1,0,1,2,3,4,4,4", "2,1,0,1,2,2,2,1,1,1,2,4,4,2,1,0,1,2,2,2,1,1,2,1,0", "4,2,2,3,1,1,0,1,2,3,4,4,4", "0,0,0,0,2,2,2,2,4,4,4,4,2,2,2,2,3,3,3,3,2,2,2,2,1,1,1,1,0", "4,3,2,1,0,2,2,1,1,2,2,1,1,4,3,2,1,0", "0,2,3,4,0,2,3,4,0,2,3,4,2,0,2,1"];
     const fingersStr = ["1,2,3,1,2,3,5,3,2,1,2,3,2", "3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1", "1,2,3,1,2,3,5,3,2,1,2,3,2", "1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3", "5,3,3,4,2,2,1,2,3,4,5,5,5", "3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1", "5,3,3,4,2,2,1,2,3,4,5,5,5", "1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3,4,4,4,4,3,3,3,3,2,2,2,2,1", "5,4,3,2,1,3,3,2,2,3,3,2,2,5,4,3,2,1", "1,3,4,5,1,3,4,5,1,3,4,5,3,1,3,2"];
 
-    // 音階の周波数マッピング（ハ長調: ド レ ミ ファ ソ ラ シ ド）
     const frequencies = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
 
     const songData = [];
@@ -140,60 +139,54 @@
         osc.stop(audioCtx.currentTime + duration);
     }
 
-    function playFullMelody(callback) {
-        const song = songData[songIdx];
-        let time = audioCtx.currentTime;
-        isTransitioning = true;
-        
-        song.notes.forEach((noteIdx, i) => {
-            setTimeout(() => {
-                playTone(frequencies[noteIdx], 0.3);
-                lightUpKey(noteIdx);
-                if (i === song.notes.length - 1 && callback) {
-                    setTimeout(callback, 500);
-                }
-            }, i * 400);
-        });
-    }
-
-    function lightUpKey(keyIdx) {
-        clearLights();
-        const key = document.getElementById(`key-${keyIdx}`);
-        if (key) {
-            key.classList.add('light-up', `light-up-${keyIdx}`);
-            setTimeout(() => {
-                key.classList.remove('light-up', `light-up-${keyIdx}`);
-            }, 300);
-        }
-    }
-
-    function clearLights() {
-        for (let i = 0; i < 8; i++) {
-            const key = document.getElementById(`key-${i}`);
-            if (key) {
-                key.className = 'invisible-key';
-            }
-        }
-    }
-
     function resetGame() {
         melodyIndex = 0;
         hasMistakeInCurrentTurn = false;
         isTransitioning = false;
-        updateScoreDisplay();
-        nextNote();
+        updateUI();
+        highlightKey();
     }
 
-    function nextNote() {
-        if (isTransitioning) return;
-        clearLights();
+    function changeSong() {
+        songIdx = parseInt(document.getElementById('song-select').value);
+        resetGame();
+    }
+
+    function setHand(hand) {
+        currentHand = hand;
+        document.getElementById('btn-right').classList.toggle('active-hand', hand === 'right');
+        document.getElementById('btn-left').classList.toggle('active-hand', hand === 'left');
+        resetGame();
+    }
+
+    function updateUI() {
         const song = songData[songIdx];
-        
-        if (melodyIndex >= song.notes.length) {
-            endTurn();
-            return;
-        }
+        if (melodyIndex >= song.notes.length) return;
 
         const targetNote = song.notes[melodyIndex];
-        const targetFingerRight = song.fingers[melodyIndex];
-        // 左手の場合は指番号を反転
+        const rawFinger = song.fingers[melodyIndex];
+        
+        // ひだりての場合は指の番号をマッピング変換
+        const actualFinger = currentHand === 'left' ? leftHandMap[rawFinger] : rawFinger;
+
+        // レベルに応じたメッセージ表示切り替え
+        if (currentLevel === 1) {
+            document.getElementById('question-text').innerText = `${fingerNames[actualFinger]} をおしてね！`;
+        } else {
+            document.getElementById('question-text').innerText = `つぎの音をおしてね！`;
+        }
+
+        document.getElementById('score-display').innerText = `チャレンジ: ${totalAttempts}/5 (ノーミス: ${noMistakeCount})`;
+        document.getElementById('level-display').innerText = `レベル: ${currentLevel} (${currentLevel === 1 ? 'お名前モード' : 'かんがえるモード'})`;
+    }
+
+    function highlightKey() {
+        // すべてのハイライトをリセット
+        for (let i = 0; i < 8; i++) {
+            const el = document.getElementById(`key-${i}`);
+            el.className = 'invisible-key';
+        }
+
+        const song = songData[songIdx];
+        if (melodyIndex < song.notes.length) {
+            const targetNote = song.notes[melodyIndex];
