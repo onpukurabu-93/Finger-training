@@ -86,6 +86,7 @@
             height: 100%;
             cursor: pointer;
             position: relative;
+            background: rgba(0,0,0,0); /* タッチを確実にするため透明な背景を設定 */
         }
         /* 音の階段に合わせた半透明の光る色 */
         .light-up-0 { background: rgba(255, 59, 48, 0.4) !important; }
@@ -102,14 +103,13 @@
             border-radius: 5px;
         }
         @keyframes blink { 0% { opacity: 0.2; } 100% { opacity: 1; } }
-        .mic-status { font-size: 12px; color: #a4b0be; margin-top: 10px; }
     </style>
 </head>
-<body>
+<!-- 💡 iPad対策：画面のどこかを触ったらすぐに音を出せる準備をする -->
+<body onclick="initAudioOnce()">
 
-<div class="container">
+<div class="container" onclick="event.stopPropagation(); initAudioOnce();">
     <div class="controls">
-        <!-- ご指定のルート順（①→⑧→⑨→⑩→③→⑤→⑦→②→④→⑥） -->
         <select id="song-select" onchange="changeSong()">
             <option value="1">1. チューリップ (スタート)</option>
             <option value="8">2. 子犬のマーチ</option>
@@ -133,8 +133,8 @@
         <span id="score-display">チャレンジ: 0/5 (ノーミス: 0)</span>
     </div>
 
-    <div class="msg-box" id="msg-box" onclick="startApp()">
-        <div class="question" id="question-text">ここをタッチして スタート！</div>
+    <div class="msg-box" id="msg-box">
+        <div class="question" id="question-text">画面をタッチして スタート！</div>
         <div class="hint" id="hint-text"></div>
     </div>
 
@@ -151,68 +151,22 @@
             <div class="invisible-key" id="key-7" onclick="pressKey(7)"></div>
         </div>
     </div>
-
-    <div class="mic-status" id="mic-info">🎤 音声認識：画面タッチ後に準備します</div>
 </div>
 
 <script>
-    // --- 👑 10曲すべてのデータを完全に書き込みました 👑 ---
-    // notesの数字: 0=ド, 1=レ, 2=ミ, 3=ファ, 4=ソ
-    // fingersの数字: 右手での指番号 (1=親指, 2=人差指, 3=中指, 4=薬指, 5=小指)
     const songData = {
-        1: { 
-            name: "チューリップ", 
-            notes:, 
-            fingers: [1, 2, 3, 1, 2, 3, 5, 3, 2, 1, 2, 3, 2] 
-        },
-        2: { 
-            name: "ひげじいさん", 
-            notes:, 
-            fingers: [1, 1, 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 2, 2, 2, 2, 1] 
-        },
-        3: { 
-            name: "かっこう", 
-            notes:, 
-            fingers: [5, 3, 5, 3, 5, 4, 3, 2, 1, 2, 3, 4, 5, 5, 5, 5, 3, 2, 1] 
-        },
-        4: { 
-            name: "ぶんぶんぶん", 
-            notes:, 
-            fingers: [5, 4, 3, 2, 1, 3, 3, 3, 3, 3, 2, 3, 4, 2, 5, 4, 3, 2, 1] 
-        },
-        5: { 
-            name: "メリーさんの羊", 
-            notes:, 
-            fingers: [3, 2, 1, 2, 3, 3, 3, 2, 2, 2, 3, 5, 5, 3, 2, 1, 2, 3, 3, 3, 3, 2, 2, 3, 2, 1] 
-        },
-        6: { 
-            name: "聖者の行進", 
-            notes:, 
-            fingers: [1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 3, 1, 3, 2, 3, 3, 2, 1, 1, 3, 5, 5, 4, 3, 4, 5, 3, 1, 2, 1] 
-        },
-        7: { 
-            name: "ちょうちょ", 
-            notes:, 
-            fingers: [5, 3, 3, 4, 2, 2, 1, 2, 3, 4, 5, 5, 5, 5, 3, 3, 3, 4, 2, 2, 2, 1, 3, 5, 5, 3, 3, 3, 3] 
-        },
-        8: { 
-            name: "子犬のマーチ", 
-            notes:, 
-            fingers: [3, 3, 3, 3, 3, 3, 3, 5, 1, 2, 3, 4, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 3, 2, 1] 
-        },
-        9: { 
-            name: "河は呼んでいる", 
-            notes:, 
-            fingers: [1, 2, 3, 4, 5, 5, 5, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 5, 5, 4, 3, 2, 1] 
-        },
-        10:{ 
-            name: "糸まき", 
-            notes:, 
-            fingers: [1, 1, 2, 2, 3, 3, 1, 3, 3, 4, 4, 5, 5, 3, 5, 5, 5, 4, 3, 3, 3, 2, 1, 2, 3, 1, 5, 5, 5, 4, 3, 3, 3, 2, 1] 
-        }
+        1: { name: "チューリップ", notes:, fingers: [1,2,3,1,2,3,5,3,2,1,2,3,2] },
+        2: { name: "ひげじいさん", notes:, fingers: [1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3] },
+        3: { name: "かっこう", notes:, fingers: [5,3,5,3,5,4,3,2,1] },
+        4: { name: "ぶんぶんぶん", notes:, fingers: [5,4,3,2,1,3,3,3,3,3,4,5,5,4,3,2,1] },
+        5: { name: "メリーさんの羊", notes:, fingers: [3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1] },
+        6: { name: "聖者の行進", notes:, fingers: [1,3,4,5,1,3,4,5,1,3,4,5,3,1,3,2] },
+        7: { name: "ちょうちょ", notes:, fingers: [5,3,3,4,2,2,1,2,3,4,5,5,5] },
+        8: { name: "子犬のマーチ", notes:, fingers: [3,1,3,1,3,3,3,2,1,2,1,2,2,2,3,1,3,1,3,3,3,2,2,3,2,1] },
+        9: { name: "河は呼んでいる", notes:, fingers: [1,2,3,5,5,5,4,3,2,2,2,3,4,3,2,1,1] },
+        10:{ name: "糸まき", notes:, fingers: [1,1,2,2,3,3,1,3,3,4,4,5,5,3,5,5,4,4,3,3,2,5,5,4,4,3,3,1] }
     };
 
-    // 曲の自動進路ルート
     const nextSongRoute = { 1: 8, 8: 9, 9: 10, 10: 3, 3: 5, 5: 7, 7: 2, 2: 4, 4: 6, 6: 1 };
     const fingerNames = { 1: 'お父さん指', 2: 'お母さん指', 3: 'お兄さん指', 4: 'お姉さん指', 5: '赤ちゃん指' };
     const leftHandMap = { 1: 5, 2: 4, 3: 3, 4: 2, 5: 1 }; 
@@ -221,7 +175,7 @@
     let currentLevel = 1; 
     let currentSongId = 1;
     let melodyIndex = 0;
-    let isAppStarted = false;
+    let isAudioInitialized = false;
     
     let totalAttempts = 0; 
     let noMistakeCount = 0; 
@@ -230,16 +184,33 @@
     let synth = window.speechSynthesis;
     let audioCtx = null;
 
-    function startApp() {
-        if (isAppStarted) return;
-        isAppStarted = true;
+    // 💡 画面のどこかを1回タップしただけでスピーカーのロックを解除する関数
+    function initAudioOnce() {
+        if (isAudioInitialized) return;
+        isAudioInitialized = true;
+        
+        // 音声回路を立ち上げる
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        initMic();
+        
+        // iOS/iPadOS用のダミー音再生（スピーカーの強制アンロック）
+        const buffer = audioCtx.createBuffer(1, 1, 22050);
+        const source = audioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioCtx.destination);
+        source.start(0);
+        
+        // クイズを開始
         nextNote();
     }
 
     function playTone(freq, duration = 0.4) {
         if (!audioCtx) return;
+        
+        // iPadがスリープ状態から復帰した時用の対策
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -260,3 +231,28 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.2, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + 0.35);
+            time += 0.35;
+        });
+        setTimeout(callback, song.notes.length * 350 + 500);
+    }
+
+    function nextNote() {
+        if (!isAudioInitialized) return;
+        
+        document.querySelectorAll('.invisible-key').forEach(k => {
+            k.classList.remove('light-up');
+            k.className = 'invisible-key'; 
+        });
+        document.getElementById('hint-text').textContent = '';
+
+        const song = songData[currentSongId];
+
+        if (melodyIndex >= song.notes.length) {
+            totalAttempts++;
