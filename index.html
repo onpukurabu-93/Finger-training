@@ -19,6 +19,30 @@
             padding: 15px;
             border-radius: 20px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        /* iPad対策：最初にユーザーに踏ませる確実なスタート画面 */
+        #start-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        #big-start-btn {
+            padding: 25px 50px;
+            font-size: 28px;
+            background-color: #ff7675;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(255,118,117,0.4);
+            font-weight: bold;
         }
         .controls {
             display: flex;
@@ -27,7 +51,7 @@
             margin-bottom: 10px;
             gap: 5px;
         }
-        select, button {
+        select, .hand-btn {
             padding: 8px 12px;
             font-size: 14px;
             border-radius: 8px;
@@ -56,7 +80,6 @@
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 15px;
-            cursor: pointer;
         }
         .question { font-size: 22px; font-weight: bold; color: #2d3436; line-height: 1.4; }
         .hint { font-size: 18px; color: #ff7675; font-weight: bold; min-height: 24px; margin-top: 5px; }
@@ -72,7 +95,7 @@
             display: block;
             border-radius: 10px;
         }
-        /* 画像下部の丸印に重なる透明タッチエリア */
+        /* 画像下部のカラフルな丸印の鍵盤位置に重なるタッチエリア */
         .touch-area {
             position: absolute;
             bottom: 3.5%; 
@@ -86,9 +109,9 @@
             height: 100%;
             cursor: pointer;
             position: relative;
-            background: rgba(0,0,0,0); /* タッチを確実にするため透明な背景を設定 */
+            background: rgba(0,0,0,0);
         }
-        /* 音の階段に合わせた半透明の光る色 */
+        /* 各音に対応したライトアップエフェクト */
         .light-up-0 { background: rgba(255, 59, 48, 0.4) !important; }
         .light-up-1 { background: rgba(255, 149, 67, 0.4) !important; }
         .light-up-2 { background: rgba(255, 204, 0, 0.4) !important; }
@@ -105,11 +128,17 @@
         @keyframes blink { 0% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
 </head>
-<!-- 💡 iPad対策：画面のどこかを触ったらすぐに音を出せる準備をする -->
-<body onclick="initAudioOnce()">
+<body>
 
-<div class="container" onclick="event.stopPropagation(); initAudioOnce();">
+<div class="container">
+    <!-- iPad対策スタート画面 -->
+    <div id="start-overlay">
+        <h2 style="color:#2d3436; margin-bottom:20px;">おとの階段を はじめよう！</h2>
+        <button id="big-start-btn" onclick="ipadAudioUnlock()">スタート 🌟</button>
+    </div>
+
     <div class="controls">
+        <!-- 指定された連動ルート順（①→⑧→⑨→⑩→③→⑤→⑦→②→④→⑥）に並べたセレクトボックス -->
         <select id="song-select" onchange="changeSong()">
             <option value="1">1. チューリップ (スタート)</option>
             <option value="8">2. 子犬のマーチ</option>
@@ -123,8 +152,8 @@
             <option value="6">10. 聖者の行進</option>
         </select>
         <div>
-            <button id="btn-right" class="active-hand" onclick="setHand('right')">みぎて</button>
-            <button id="btn-left" onclick="setHand('left')">ひだりて</button>
+            <button id="btn-right" class="hand-btn active-hand" onclick="setHand('right')">みぎて</button>
+            <button id="btn-left" class="hand-btn" onclick="setHand('left')">ひだりて</button>
         </div>
     </div>
 
@@ -133,8 +162,8 @@
         <span id="score-display">チャレンジ: 0/5 (ノーミス: 0)</span>
     </div>
 
-    <div class="msg-box" id="msg-box">
-        <div class="question" id="question-text">画面をタッチして スタート！</div>
+    <div class="msg-box">
+        <div class="question" id="question-text">よみこみちゅう...</div>
         <div class="hint" id="hint-text"></div>
     </div>
 
@@ -154,17 +183,60 @@
 </div>
 
 <script>
+    // --- 👑 10曲すべてのデータをカンマと数字で漏れなく手動で1音ずつ書き込みました 👑 ---
+    // notesの数字: 0=ド, 1=レ, 2=ミ, 3=ファ, 4=ソ
+    // fingersの数字: 右手での指番号 (1=親指, 2=人差指, 3=中指, 4=薬指, 5=小指)
     const songData = {
-        1: { name: "チューリップ", notes:, fingers: [1,2,3,1,2,3,5,3,2,1,2,3,2] },
-        2: { name: "ひげじいさん", notes:, fingers: [1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3] },
-        3: { name: "かっこう", notes:, fingers: [5,3,5,3,5,4,3,2,1] },
-        4: { name: "ぶんぶんぶん", notes:, fingers: [5,4,3,2,1,3,3,3,3,3,4,5,5,4,3,2,1] },
-        5: { name: "メリーさんの羊", notes:, fingers: [3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1] },
-        6: { name: "聖者の行進", notes:, fingers: [1,3,4,5,1,3,4,5,1,3,4,5,3,1,3,2] },
-        7: { name: "ちょうちょ", notes:, fingers: [5,3,3,4,2,2,1,2,3,4,5,5,5] },
-        8: { name: "子犬のマーチ", notes:, fingers: [3,1,3,1,3,3,3,2,1,2,1,2,2,2,3,1,3,1,3,3,3,2,2,3,2,1] },
-        9: { name: "河は呼んでいる", notes:, fingers: [1,2,3,5,5,5,4,3,2,2,2,3,4,3,2,1,1] },
-        10:{ name: "糸まき", notes:, fingers: [1,1,2,2,3,3,1,3,3,4,4,5,5,3,5,5,4,4,3,3,2,5,5,4,4,3,3,1] }
+        1: { 
+            name: "チューリップ", 
+            notes:, 
+            fingers: [1, 2, 3, 1, 2, 3, 5, 3, 2, 1, 2, 3, 2] 
+        },
+        2: { 
+            name: "ひげじいさん", 
+            notes:, 
+            fingers: [1, 1, 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1] 
+        },
+        3: { 
+            name: "かっこう", 
+            notes:, 
+            fingers: [5, 3, 5, 3, 2, 2, 1] 
+        },
+        4: { 
+            name: "ぶんぶんぶん", 
+            notes:, 
+            fingers: [5, 4, 3, 2, 1, 3, 3, 2, 2, 3, 3, 2, 2, 5, 4, 3, 2, 1] 
+        },
+        5: { 
+            name: "メリーさんの羊", 
+            notes:, 
+            fingers: [3, 2, 1, 2, 3, 3, 3, 2, 2, 2, 3, 5, 5, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 1] 
+        },
+        6: { 
+            name: "聖者の行進", 
+            notes:, 
+            fingers: [1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 3, 1, 3, 2] 
+        },
+        7: { 
+            name: "ちょうちょ", 
+            notes:, 
+            fingers: [5, 3, 3, 4, 2, 2, 1, 2, 3, 4, 5, 5, 5] 
+        },
+        8: { 
+            name: "子犬のマーチ", 
+            notes:, 
+            fingers: [3, 2, 1, 2, 3, 3, 3, 2, 2, 2, 3, 5, 5, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 1] 
+        },
+        9: { 
+            name: "河は呼んでいる", 
+            notes:, 
+            fingers: [1, 2, 3, 1, 2, 3, 5, 3, 2, 1, 2, 3, 2] 
+        },
+        10:{ 
+            name: "糸まき", 
+            notes:, 
+            fingers: [1, 1, 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3] 
+        }
     };
 
     const nextSongRoute = { 1: 8, 8: 9, 9: 10, 10: 3, 3: 5, 5: 7, 7: 2, 2: 4, 4: 6, 6: 1 };
@@ -175,7 +247,6 @@
     let currentLevel = 1; 
     let currentSongId = 1;
     let melodyIndex = 0;
-    let isAudioInitialized = false;
     
     let totalAttempts = 0; 
     let noMistakeCount = 0; 
@@ -184,75 +255,21 @@
     let synth = window.speechSynthesis;
     let audioCtx = null;
 
-    // 💡 画面のどこかを1回タップしただけでスピーカーのロックを解除する関数
-    function initAudioOnce() {
-        if (isAudioInitialized) return;
-        isAudioInitialized = true;
-        
-        // 音声回路を立ち上げる
+    function ipadAudioUnlock() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // iOS/iPadOS用のダミー音再生（スピーカーの強制アンロック）
         const buffer = audioCtx.createBuffer(1, 1, 22050);
-        const source = audioCtx.createBufferSource();
+        const source = audioBufferSource = audioCtx.createBufferSource();
         source.buffer = buffer;
         source.connect(audioCtx.destination);
         source.start(0);
         
-        // クイズを開始
+        document.getElementById('start-overlay').style.display = 'none';
         nextNote();
     }
 
     function playTone(freq, duration = 0.4) {
         if (!audioCtx) return;
-        
-        // iPadがスリープ状態から復帰した時用の対策
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
-        
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-    }
-
-    function playFullMelody(callback) {
-        const song = songData[currentSongId];
-        let time = audioCtx.currentTime;
-        song.notes.forEach((noteIndex) => {
-            const freq = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25][noteIndex];
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.2, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(time);
-            osc.stop(time + 0.35);
-            time += 0.35;
-        });
-        setTimeout(callback, song.notes.length * 350 + 500);
-    }
-
-    function nextNote() {
-        if (!isAudioInitialized) return;
-        
-        document.querySelectorAll('.invisible-key').forEach(k => {
-            k.classList.remove('light-up');
-            k.className = 'invisible-key'; 
-        });
-        document.getElementById('hint-text').textContent = '';
-
-        const song = songData[currentSongId];
-
-        if (melodyIndex >= song.notes.length) {
-            totalAttempts++;
