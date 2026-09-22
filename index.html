@@ -7,6 +7,7 @@
     <style>
         body { font-family: sans-serif; background-color: #f5f6fa; text-align: center; margin: 0; padding: 10px; }
         .container { max-width: 500px; margin: 0 auto; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.05); position: relative; }
+        /* iPad対策：最初に必ず踏ませるスタートオーバーレイ */
         #start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
         #big-start-btn { padding: 25px 50px; font-size: 28px; background-color: #ff7675; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 5px; }
@@ -18,8 +19,10 @@
         .hint { font-size: 18px; color: #ff7675; font-weight: bold; min-height: 24px; margin-top: 5px; }
         .piano-wrapper { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
         .bg-image { width: 100%; display: block; border-radius: 10px; }
+        /* 下部の丸印の鍵盤位置に重なるタッチエリア */
         .touch-area { position: absolute; bottom: 3.5%; left: 6.5%; width: 87%; height: 12%; display: flex; }
         .invisible-key { flex: 1; height: 100%; cursor: pointer; position: relative; background: rgba(0,0,0,0); }
+        /* 各音の半透明カラー */
         .light-up-0 { background: rgba(255, 59, 48, 0.4) !important; }
         .light-up-1 { background: rgba(255, 149, 67, 0.4) !important; }
         .light-up-2 { background: rgba(255, 204, 0, 0.4) !important; }
@@ -42,16 +45,16 @@
 
     <div class="controls">
         <select id="song-select" onchange="changeSong()">
-            <option value="1">1. チューリップ (スタート)</option>
-            <option value="8">2. 子犬のマーチ</option>
-            <option value="9">3. 河は呼んでいる</option>
-            <option value="10">4. 糸まき</option>
-            <option value="3">5. かっこう</option>
+            <option value="0">1. チューリップ</option>
+            <option value="1">2. 子犬のマーチ</option>
+            <option value="2">3. 河は呼んでいる</option>
+            <option value="3">4. 糸まき</option>
+            <option value="4">5. かっこう</option>
             <option value="5">6. メリーさんの羊</option>
-            <option value="7">7. ちょうちょ</option>
-            <option value="2">8. ひげじいさん</option>
-            <option value="4">9. ぶんぶんぶん</option>
-            <option value="6">10. 聖者の行進</option>
+            <option value="6">7. ちょうちょ</option>
+            <option value="7">8. ひげじいさん</option>
+            <option value="8">9. ぶんぶんぶん</option>
+            <option value="9">10. 聖者の行進</option>
         </select>
         <div>
             <button id="btn-right" class="hand-btn active-hand" onclick="setHand('right')">みぎて</button>
@@ -85,32 +88,26 @@
 </div>
 
 <script>
-    const nameData = "チューリップ,ひげじいさん,かっこう,ぶんぶんぶん,メリーさんの羊,聖者の行進,ちょうちょ,子犬のマーチ,河は呼んでいる,糸まき";
-    const noteData = "0120124210121|00002222444422223333222211110|4223110123444|432102211221143210|2101222111244210122211210|0234023402342021|4223110123444|2101222111244210122211210|0120124210121|0000222244442222";
-    const fingerData = "1231235321232|11113333555533334444333322221|5334221234555|543213322332254321|3212333222355321233322321|1345134513453132|5334221234555|3212333222355321233322321|1231235321232|1111333355553333";
+    // 👑 10曲すべてのテキストデータを検証。空白エラーが出る危険な配列記号をすべて排除しました。
+    const titles = ["チューリップ", "子犬のマーチ", "河は呼んでいる", "糸まき", "かっこう", "メリーさんの羊", "ちょうちょ", "ひげじいさん", "ぶんぶんぶん", "聖者の行進"];
+    const notesStr = ["0,1,2,0,1,2,4,2,1,0,1,2,1", "2,1,0,1,2,2,2,1,1,1,2,4,4,2,1,0,1,2,2,2,1,1,2,1,0", "0,1,2,0,1,2,4,2,1,0,1,2,1", "0,0,0,0,2,2,2,2,4,4,4,4,2,2,2,2", "4,2,2,3,1,1,0,1,2,3,4,4,4", "2,1,0,1,2,2,2,1,1,1,2,4,4,2,1,0,1,2,2,2,1,1,2,1,0", "4,2,2,3,1,1,0,1,2,3,4,4,4", "0,0,0,0,2,2,2,2,4,4,4,4,2,2,2,2,3,3,3,3,2,2,2,2,1,1,1,1,0", "4,3,2,1,0,2,2,1,1,2,2,1,1,4,3,2,1,0", "0,2,3,4,0,2,3,4,0,2,3,4,2,0,2,1"];
+    const fingersStr = ["1,2,3,1,2,3,5,3,2,1,2,3,2", "3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1", "1,2,3,1,2,3,5,3,2,1,2,3,2", "1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3", "5,3,3,4,2,2,1,2,3,4,5,5,5", "3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1", "5,3,3,4,2,2,1,2,3,4,5,5,5", "1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3,4,4,4,4,3,3,3,3,2,2,2,2,1", "5,4,3,2,1,3,3,2,2,3,3,2,2,5,4,3,2,1", "1,3,4,5,1,3,4,5,1,3,4,5,3,1,3,2"];
 
-    const songData = {};
-    const names = nameData.split(",");
-    const notesList = noteData.split("|");
-    const fingersList = fingerData.split("|");
-    const idMap =;
-
+    const songData = [];
     for (let i = 0; i < 10; i++) {
-        let currentId = idMap[i];
-        songData[currentId] = {
-            name: names[i],
-            notes: notesList[i].split("").map(Number),
-            fingers: fingersList[i].split("").map(Number)
-        };
+        songData.push({
+            name: titles[i],
+            notes: notesStr[i].split(",").map(Number),
+            fingers: fingersStr[i].split(",").map(Number)
+        });
     }
 
-    const nextSongRoute = { 1: 8, 8: 9, 9: 10, 10: 3, 3: 5, 5: 7, 7: 2, 2: 4, 4: 6, 6: 1 };
     const fingerNames = { 1: 'お父さん指', 2: 'お母さん指', 3: 'お兄さん指', 4: 'お姉さん指', 5: '赤ちゃん指' };
     const leftHandMap = { 1: 5, 2: 4, 3: 3, 4: 2, 5: 1 }; 
 
     let currentHand = 'right';
     let currentLevel = 1; 
-    let currentSongId = 1;
+    let songIdx = 0; 
     let melodyIndex = 0;
     let totalAttempts = 0; 
     let noMistakeCount = 0; 
@@ -144,7 +141,7 @@
     }
 
     function playFullMelody(callback) {
-        const song = songData[currentSongId];
+        const song = songData[songIdx];
         let time = audioCtx.currentTime;
         song.notes.forEach((noteIndex) => {
             const freq = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25][noteIndex];
@@ -169,7 +166,7 @@
             k.className = 'invisible-key'; 
         });
         document.getElementById('hint-text').textContent = '';
-        const song = songData[currentSongId];
+        const song = songData[songIdx];
 
         if (melodyIndex >= song.notes.length) {
             totalAttempts++;
@@ -180,18 +177,14 @@
             playFullMelody(() => {
                 if (totalAttempts >= 5) {
                     if (noMistakeCount >= 3) {
-                        alert(`🎉 すごい！5回中 ${noMistakeCount} 回ノーミス！レベル2に進むよ！`);
+                        alert("🎉 すごい！5回中 " + noMistakeCount + " 回ノーミス！レベル2に進むよ！");
                         currentLevel = 2;
                         document.getElementById('level-display').textContent = 'レベル: 2 (すうじモード)';
                     } else {
-                        alert(`5回おわったよ！ ${noMistakeCount} 回ノーミス！もういちど挑戦してね！`);
+                        alert("5回おわったよ！ " + noMistakeCount + " 回ノーミス！もういちど挑戦してね！");
                     }
                     totalAttempts = 0;
                     noMistakeCount = 0;
                 } else {
                     alert('🌟 さいごまで弾けたね！次のチャレンジ！');
                 }
-                
-                if (totalAttempts === 0 && currentLevel === 2) {
-                    currentSongId = nextSongRoute[currentSongId];
-                    document.getElementById('song-select').value = currentSongId;
