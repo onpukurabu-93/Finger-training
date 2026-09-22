@@ -109,7 +109,7 @@
     let noMistakeCount = 0; 
     let hasMistakeInCurrentTurn = false; 
     let audioCtx = null;
-    let isTransitioning = false; // 👑 多重タップ・連打防止用のフラグ
+    let isTransitioning = false; 
 
     function ipadAudioUnlock() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -166,7 +166,7 @@
         const song = songData[songIdx];
 
         if (melodyIndex >= song.notes.length) {
-            isTransitioning = true; // 自動演奏中の入力をガード
+            isTransitioning = true; 
             totalAttempts++;
             if (!hasMistakeInCurrentTurn) noMistakeCount++;
             updateScoreDisplay();
@@ -179,3 +179,4 @@
                         currentLevel = 2;
                         document.getElementById('level-display').textContent = 'レベル: 2 (すうじモード)';
                     } else {
+                        alert("5回おわったよ！ " + noMistakeCount + " 回ノーミス！もういちど挑戦してね！");
