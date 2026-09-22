@@ -70,7 +70,7 @@
     </div>
 
     <div class="piano-wrapper">
-        <img src="1kaidan_0.png" alt="音の階段" class="bg-image" onerror="this.src='https://placeholder.com'">
+        <img src="1kaidan_0.png" alt="音の階段" class="bg-image" onerror="this.src='https://placehold.co'">
         <div class="touch-area">
             <div class="invisible-key" id="key-0" onclick="pressKey(0)"></div>
             <div class="invisible-key" id="key-1" onclick="pressKey(1)"></div>
@@ -88,6 +88,9 @@
     const titles = ["チューリップ", "子犬のマーチ", "河は呼んでいる", "糸まき", "かっこう", "メリーさんの羊", "ちょうちょ", "ひげじいさん", "ぶんぶんぶん", "聖者の行進"];
     const notesStr = ["0,1,2,0,1,2,4,2,1,0,1,2,1", "2,1,0,1,2,2,2,1,1,1,2,4,4,2,1,0,1,2,2,2,1,1,2,1,0", "0,1,2,0,1,2,4,2,1,0,1,2,1", "0,0,0,0,2,2,2,2,4,4,4,4,2,2,2,2", "4,2,2,3,1,1,0,1,2,3,4,4,4", "2,1,0,1,2,2,2,1,1,1,2,4,4,2,1,0,1,2,2,2,1,1,2,1,0", "4,2,2,3,1,1,0,1,2,3,4,4,4", "0,0,0,0,2,2,2,2,4,4,4,4,2,2,2,2,3,3,3,3,2,2,2,2,1,1,1,1,0", "4,3,2,1,0,2,2,1,1,2,2,1,1,4,3,2,1,0", "0,2,3,4,0,2,3,4,0,2,3,4,2,0,2,1"];
     const fingersStr = ["1,2,3,1,2,3,5,3,2,1,2,3,2", "3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1", "1,2,3,1,2,3,5,3,2,1,2,3,2", "1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3", "5,3,3,4,2,2,1,2,3,4,5,5,5", "3,2,1,2,3,3,3,2,2,2,3,5,5,3,2,1,2,3,3,3,2,2,3,2,1", "5,3,3,4,2,2,1,2,3,4,5,5,5", "1,1,1,1,3,3,3,3,5,5,5,5,3,3,3,3,4,4,4,4,3,3,3,3,2,2,2,2,1", "5,4,3,2,1,3,3,2,2,3,3,2,2,5,4,3,2,1", "1,3,4,5,1,3,4,5,1,3,4,5,3,1,3,2"];
+
+    // 音階の周波数マッピング（ハ長調: ド レ ミ ファ ソ ラ シ ド）
+    const frequencies = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
 
     const songData = [];
     for (let i = 0; i < 10; i++) {
@@ -119,7 +122,7 @@
         source.connect(audioCtx.destination);
         source.start(0);
         document.getElementById('start-overlay').style.display = 'none';
-        nextNote();
+        resetGame();
     }
 
     function playTone(freq, duration = 0.4) {
@@ -140,43 +143,57 @@
     function playFullMelody(callback) {
         const song = songData[songIdx];
         let time = audioCtx.currentTime;
-        song.notes.forEach((noteIndex) => {
-            const freq = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25][noteIndex];
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.2, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(time);
-            osc.stop(time + 0.35);
-            time += 0.35;
+        isTransitioning = true;
+        
+        song.notes.forEach((noteIdx, i) => {
+            setTimeout(() => {
+                playTone(frequencies[noteIdx], 0.3);
+                lightUpKey(noteIdx);
+                if (i === song.notes.length - 1 && callback) {
+                    setTimeout(callback, 500);
+                }
+            }, i * 400);
         });
-        setTimeout(callback, song.notes.length * 350 + 500);
+    }
+
+    function lightUpKey(keyIdx) {
+        clearLights();
+        const key = document.getElementById(`key-${keyIdx}`);
+        if (key) {
+            key.classList.add('light-up', `light-up-${keyIdx}`);
+            setTimeout(() => {
+                key.classList.remove('light-up', `light-up-${keyIdx}`);
+            }, 300);
+        }
+    }
+
+    function clearLights() {
+        for (let i = 0; i < 8; i++) {
+            const key = document.getElementById(`key-${i}`);
+            if (key) {
+                key.className = 'invisible-key';
+            }
+        }
+    }
+
+    function resetGame() {
+        melodyIndex = 0;
+        hasMistakeInCurrentTurn = false;
+        isTransitioning = false;
+        updateScoreDisplay();
+        nextNote();
     }
 
     function nextNote() {
-        document.querySelectorAll('.invisible-key').forEach(k => {
-            k.classList.remove('light-up');
-            k.className = 'invisible-key'; 
-        });
-        document.getElementById('hint-text').textContent = '';
+        if (isTransitioning) return;
+        clearLights();
         const song = songData[songIdx];
-
+        
         if (melodyIndex >= song.notes.length) {
-            isTransitioning = true; 
-            totalAttempts++;
-            if (!hasMistakeInCurrentTurn) noMistakeCount++;
-            updateScoreDisplay();
+            endTurn();
+            return;
+        }
 
-            document.getElementById('question-text').textContent = "「こんな曲になったよ！きいててね！」";
-            playFullMelody(() => {
-                if (totalAttempts >= 5) {
-                    if (noMistakeCount >= 3) {
-                        alert("🎉 すごい！5回中 " + noMistakeCount + " 回ノーミス！レベル2に進むよ！");
-                        currentLevel = 2;
-                        document.getElementById('level-display').textContent = 'レベル: 2 (すうじモード)';
-                    } else {
-                        alert("5回おわったよ！ " + noMistakeCount + " 回ノーミス！もういちど挑戦してね！");
+        const targetNote = song.notes[melodyIndex];
+        const targetFingerRight = song.fingers[melodyIndex];
+        // 左手の場合は指番号を反転
