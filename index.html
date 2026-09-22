@@ -1,1 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音の階段 指トレーニング</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f6fa;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 5px;
+        }
+        select, button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .active-hand {
+            background-color: #ff7675;
+            color: white;
+            border-color: #ff7675;
+        }
+        .status-bar {
+            background: #f1f2f6;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .msg-box {
+            background: #fff9db;
+            border: 2px solid #fab005;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .question { font-size: 22px; font-weight: bold; color: #2d3436; line-height: 1.4; }
+        .hint { font-size: 18px; color: #ff7675; font-weight: bold; min-height: 24px; margin-top: 5px; }
+
+        .piano-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .bg-image {
+            width: 100%;
+            display: block;
+            border-radius: 10px;
+        }
+        /* 画像の白鍵盤の位置に重ねるタッチエリア */
+        .touch-area {
+            position: absolute;
+            bottom: 2%; 
+            left: 6.5%;
+            width: 87%;
+            height: 15%;
+            display: flex;
+        }
+        .invisible-key {
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
+            position: relative;
+        }
+        /* 「音の階段」のグラデーションに完全に合わせた光る色 */
+        .light-up-0 { background: rgba(255, 59, 48, 0.5) !important; }
+        .light-up-1 { background: rgba(255, 149, 67, 0.5) !important; }
+        .light-up-2 { background: rgba(255, 204, 0, 0.5) !important; }
+        .light-up-3 { background: rgba(0, 199, 129, 0.5) !important; }
+        .light-up-4 { background: rgba(90, 200, 250, 0.5) !important; }
+        .light-up-5 { background: rgba(52, 85, 165, 0.5) !important; }
+        .light-up-6 { background: rgba(229, 92, 176, 0.5) !important; }
+        .light-up-7 { background: rgba(255, 59, 48, 0.5) !important; }
+
+        .invisible-key.light-up {
+            animation: blink 0.4s infinite alternate;
+            border-radius: 5px;
+        }
+        @keyframes blink { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+        .mic-status { font-size: 12px; color: #a4b0be; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="controls">
+        <!-- ご指定のルート順（①→⑧→⑨→⑩→③→⑤→⑦→②→④→⑥）に並べたメニュー -->
+        <select id="song-select" onchange="changeSong()">
+            <option value="1">1. チューリップ (スタート)</option>
+            <option value="8">2. 子犬のマーチ</option>
+            <option value="9">3. 河は呼んでいる</option>
+            <option value="10">4. 糸まき</option>
+            <option value="3">5. かっこう</option>
+            <option value="5">6. メリーさんの羊</option>
+            <option value="7">7. ちょうちょ</option>
+            <option value="2">8. ひげじいさん</option>
+            <option value="4">9. ぶんぶんぶん</option>
+            <option value="6">10. 聖者の行進</option>
+        </select>
+        <div>
+            <button id="btn-right" class="active-hand" onclick="setHand('right')">みぎて</button>
+            <button id="btn-left" onclick="setHand('left')">ひだりて</button>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="level-display" style="font-weight:bold; color:#2f3542;">レベル: 1 (お名前モード)</span>
+        <span id="score-display">チャレンジ: 0/5 (ノーミス: 0)</span>
+    </div>
+
+    <div class="msg-box">
+        <div class="question" id="question-text">読み込み中...</div>
+        <div class="hint" id="hint-text"></div>
+    </div>
+
+    <div class="piano-wrapper">
+        <!-- 指定されたファイル名「1kaidan_0.png」を使用 -->
+        <img src="1kaidan_0.png" alt="音の階段" class="bg-image" onerror="this.src='https://placeholder.com'">
+        <div class="touch-area">
+            <div class="invisible-key" id="key-0" onclick="pressKey(0)"></div>
+            <div class="invisible-key" id="key-1" onclick="pressKey(1)"></div>
+            <div class="invisible-key" id="key-2" onclick="pressKey(2)"></div>
+            <div class="invisible-key" id="key-3" onclick="pressKey(3)"></div>
+            <div class="invisible-key" id="key-4" onclick="pressKey(4)"></div>
+            <div class="invisible-key" id="key-5" onclick="pressKey(5)"></div>
+            <div class="invisible-key" id="key-6" onclick="pressKey(6)"></div>
+            <div class="invisible-key" id="key-7" onclick="pressKey(7)"></div>
+        </div>
+    </div>
+
+    <div class="mic-status" id="mic-info">🎤 音声認識：準備中...</div>
+</div>
+
+<script>
+    // --- 楽譜・指番号データベース（手書きメモより完全再現） ---
+    // notesの数字: 0=ド, 1=レ, 2=ミ, 3=ファ, 4=ソ
+    // fingersの数字: 右手での指番号 (1=親指, 2=人差指, 3=中指, 4=薬指, 5=小指)
+    const songData = {
+        1: { name: "チューリップ", 
+             notes:, 
+             fingers: [1,2,3, 1,2,3, 5,3,2,1, 2,3,2, 1,2,3, 1,2,3, 5,3,2,1, 2,3,1] },
+        2: { name: "ひげじいさん", 
+             notes:, 
+             fingers: [1,1,1,1,2,3,2,1, 2,2,2,2,3,4,3,2, 3,3,3,3,4,5,4,3, 4,4,4,4,3,2,3,4, 5,5,5,5,4,3,4,5, 5,4,3,2,1,1,1] },
+        3: { name: "かっこう", 
+             notes:, 
+             fingers: [5,3,5,3,2,1,2,1, 2,2,3,4,2, 3,3,4,5,3, 5,3,5,3,4,3,2,1] },
+        4: { name: "ぶんぶんぶん", 
+             notes:, 
+             fingers: [5,4,3,2,3,4,2,1, 3,4,5,3,2,3,4,2, 3,4,5,3,2,3,4,2, 5,4,3,2,3,4,2,1] },
+        5: { name: "メリーさんの羊", 
+             notes:, 
+             fingers: [3,2,1,2,3,3,3, 2,2,2, 3,5,5, 3,2,1,2,3,3,3,1, 2,2,3,2,1] },
+        6: { name: "聖者の行進", 
+             notes:, 
+             fingers: [1,3,4,5, 1,3,4,5, 1,3,4,5, 3,1,3,2, 3,3,2,1, 1,3,5,5,4, 3,4,5,3, 1,2,1] },
+        7: { name: "ちょうちょ", 
+             notes:, 
+             fingers: [5,3,3, 4,2,2, 1,2,3,4, 5,5,5, 5,3,3,3, 4,2,2,2, 1,3,5,5, 3,3,3, 2,2,2,2, 2,3,4, 3,3,3,3, 3,4,5, 5,3,3,3, 4,2,2,2, 1,3,5,5, 3,3,3] },
+        8: { name: "子犬のマーチ", 
+             notes:, 
+             fingers: [3,1,3,1, 3,5,5, 4,2,2, 3,1,1, 3,1,3,1, 3,5,5, 4,2,2, 1,3,1] },
+        9: { name: "河は呼んでいる", 
+             notes:, 
+             fingers: [3,1,3,1, 3,1,2, 2,3,4,2, 3,1,2, 3,1,3,1, 3,1,2, 2,3,4,2, 3,1,1] },
+        10:{ name: "糸まき", 
+             notes:, 
+             fingers: [5,5,5,3, 1,3, 5,5,5,3, 1,3, 4,3,2,2,2, 5,5,5,3, 1,3, 5,5,5,3, 1,3, 4,3,2,2,1] }
+    };
+
+    const nextSongRoute = { 1: 8, 8: 9, 9: 10, 10: 3, 3: 5, 5: 7, 7: 2, 2: 4, 4: 6, 6: 1 };
+    const fingerNames = { 1: 'お父さん指', 2: 'お母さん指', 3: 'お兄さん指', 4: 'お姉さん指', 5: '赤ちゃん指' };
+    const leftHandMap = { 1: 5, 2: 4, 3: 3, 4: 2, 5: 1 }; // 👑 左手の自動変換ルール
+
+    let currentHand = 'right';
+    let currentLevel = 1; 
+    let currentSongId = 1;
+    let melodyIndex = 0;
+    
+    let totalAttempts = 0; 
+    let noMistakeCount = 0; 
+    let hasMistakeInCurrentTurn = false; 
+
+    const synth = window.speechSynthesis;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq, duration = 0.4) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playFullMelody(callback) {
+        const song = songData[currentSongId];
+        let time = audioCtx.currentTime;
+        song.notes.forEach((noteIndex) => {
+            const freq = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25][noteIndex];
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.2, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + 0.35);
+            time += 0.35;
+        });
 
