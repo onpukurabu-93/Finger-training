@@ -3,36 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ゆびトレ！けんばん</title>
+  <title>右手左手</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-    body{font-family:sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;padding:10px}
-    .container{max-width:100%;margin:0 auto;background:white;border-radius:20px;padding:15px;box-shadow:0 10px 30px rgba(0,0,0,0.3);display:flex;flex-direction:column}
-    h1{text-align:center;color:#333;font-size:22px;margin-bottom:15px}
-    .mode-select{display:flex;justify-content:center;gap:20px;margin-bottom:15px}
-    .mode-btn{padding:10px 30px;font-size:18px;border:none;border-radius:50px;cursor:pointer;font-weight:bold}
-    .mode-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:white}
-    .mode-btn.locked{background:#ccc;color:#999;cursor:not-allowed;opacity:0.5}
-    .finger-guide{display:flex;justify-content:center;gap:10px;margin-bottom:15px;flex-wrap:nowrap}
-    .guide-item{display:flex;flex-direction:column;align-items:center;min-width:60px;cursor:pointer}
-    .guide-number{width:40px;height:40px;background:#667eea;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;margin:0 auto 5px}
-    .guide-label{font-size:11px;color:#666;text-align:center}
-    .keyboard-section{margin-bottom:15px;text-align:center;position:relative}
-    .kaidan-image{width:100%;height:auto;display:block;cursor:pointer;border-radius:10px}
-    .keyboard-overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;pointer-events:none;z-index:10}
-    .key{flex:1;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:white;text-shadow:2px 2px 4px rgba(0,0,0,0.8);position:relative}
-    .key.highlight{animation:glow 0.5s ease infinite alternate}
-    .key .number{position:absolute;bottom:5px;font-size:20px;font-weight:bold;color:yellow;text-shadow:2px 2px 4px rgba(0,0,0,0.8)}
-    @keyframes glow{from{text-shadow:0 0 10px #fff,0 0 20px #ff6b6b}to{text-shadow:0 0 20px #fff,0 0 30px #ff6b6b}}
-    #message{position:absolute;top:10px;left:10px;font-size:16px;font-weight:bold;min-height:30px}
-    #message.correct{color:#4ecdc4}
-    #message.wrong{color:#ff6b6b}
-    #demo-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;padding:15px 40px;font-size:18px;border-radius:50px;cursor:pointer;margin:0 auto;display:block}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      min-height: 100vh;
+      padding: 10px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+    .mode-select {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    .mode-btn {
+      padding: 10px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .mode-btn.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    .mode-btn.locked {
+      background: #ccc;
+      color: #999;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    .finger-guide {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: nowrap;
+    }
+    .guide-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 60px;
+    }
+    .guide-number {
+      width: 40px;
+      height: 40px;
+      background: #667eea;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0 auto 5px;
+    }
+    .guide-label {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+    }
+    .keyboard-section {
+      margin-bottom: 15px;
+      text-align: center;
+      position: relative;
+      height: 300px;
+    }
+    .kaidan-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+    }
+    .keyboard-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .key {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .key.highlight {
+      animation: glow 0.5s ease infinite alternate;
+    }
+    .key .number {
+      font-size: 20px;
+      font-weight: bold;
+      color: yellow;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #fff, 0 0 20px #ff6b6b;
+      }
+      to {
+        text-shadow: 0 0 20px #fff, 0 0 30px #ff6b6b;
+      }
+    }
+    #message {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      min-height: 30px;
+      z-index: 20;
+    }
+    #demo-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      margin: 0 auto;
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>ゆびトレ！けんばん</h1>
+    <h1>右手左手</h1>
     <div class="mode-select">
       <button id="left-mode-btn" class="mode-btn locked">ひだりて</button>
       <button id="right-mode-btn" class="mode-btn active">みぎて</button>
@@ -42,4 +173,159 @@
         <div class="guide-number" style="background:#ff4444">1</div>
         <div class="guide-label" style="color:#ff4444">おやゆび</div>
       </div>
-      <div class="guide-item"
+      <div class="guide-item" data-finger="2">
+        <div class="guide-number" style="background:#ff9500">2</div>
+        <div class="guide-label" style="color:#ff9500">ひとさしゆび</div>
+      </div>
+      <div class="guide-item" data-finger="3">
+        <div class="guide-number" style="background:#ffd700">3</div>
+        <div class="guide-label" style="color:#ffd700">なかゆび</div>
+      </div>
+      <div class="guide-item" data-finger="4">
+        <div class="guide-number" style="background:#22c55e">4</div>
+        <div class="guide-label" style="color:#22c55e">くすりゆび</div>
+      </div>
+      <div class="guide-item" data-finger="5">
+        <div class="guide-number" style="background:#0ea5e9">5</div>
+        <div class="guide-label" style="color:#0ea5e9">こゆび</div>
+      </div>
+    </div>
+    <div class="keyboard-section">
+      <img src="1kaidan_0.png?v=2" class="kaidan-image" id="kaidan">
+      <div class="keyboard-overlay" id="keyboard-overlay">
+        <div class="key" data-note="C3"><span class="number"></span></div>
+        <div class="key" data-note="D3"><span class="number"></span></div>
+        <div class="key" data-note="E3"><span class="number"></span></div>
+        <div class="key" data-note="F3"><span class="number"></span></div>
+        <div class="key" data-note="G3"><span class="number"></span></div>
+        <div class="key" data-note="A3"><span class="number"></span></div>
+        <div class="key" data-note="B3"><span class="number"></span></div>
+        <div class="key" data-note="C4"><span class="number"></span></div>
+        <div class="key" data-note="D4"><span class="number"></span></div>
+        <div class="key" data-note="E4"><span class="number"></span></div>
+        <div class="key" data-note="F4"><span class="number"></span></div>
+        <div class="key" data-note="G4"><span class="number"></span></div>
+        <div class="key" data-note="A4"><span class="number"></span></div>
+        <div class="key" data-note="B4"><span class="number"></span></div>
+        <div class="key" data-note="C5"><span class="number"></span></div>
+        <div class="key" data-note="D5"><span class="number"></span></div>
+        <div class="key" data-note="E5"><span class="number"></span></div>
+        <div class="key" data-note="F5"><span class="number"></span></div>
+        <div class="key" data-note="G5"><span class="number"></span></div>
+      </div>
+      <div id="message"></div>
+    </div>
+    <button id="demo-btn">お手本を きく</button>
+  </div>
+  <script>
+    const keys = document.querySelectorAll('.key');
+    const message = document.getElementById('message');
+    const demoBtn = document.getElementById('demo-btn');
+
+    let noteIndex = 0;
+
+    // 右手モードの音符（チューリップ）
+    const rightHandNotes = [
+      { note: 'C3', finger: 1 },
+      { note: 'C3', finger: 1 },
+      { note: 'G3', finger: 5 },
+      { note: 'G3', finger: 5 },
+      { note: 'A3', finger: 5 },
+      { note: 'A3', finger: 5 },
+      { note: 'G3', finger: 5 },
+      { note: 'F3', finger: 4 },
+      { note: 'F3', finger: 4 },
+      { note: 'E3', finger: 3 },
+      { note: 'E3', finger: 3 },
+      { note: 'D3', finger: 2 },
+      { note: 'D3', finger: 2 },
+      { note: 'C3', finger: 1 }
+    ];
+
+    // 左手モードの音符
+    const leftHandNotes = [
+      { note: 'C3', finger: 5 },
+      { note: 'E3', finger: 3 },
+      { note: 'G3', finger: 1 },
+      { note: 'C4', finger: 1 },
+      { note: 'G3', finger: 1 },
+      { note: 'E3', finger: 3 },
+      { note: 'C3', finger: 5 }
+    ];
+
+    // 鍵盤の音階
+    const notes = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5'];
+
+    // 音を出す
+    function play(note) {
+      const audio = new Audio('https://cdn.jsdelivr.net/gh/tony-sfc/keyboard-sounds@1.0.0/' + note.toLowerCase() + '.mp3');
+      audio.play();
+    }
+
+    // 鍵盤を光らせる
+    function highlight(note) {
+      const keyIndex = notes.indexOf(note);
+      if (keyIndex >= 0 && keyIndex < keys.length) {
+        const key = keys[keyIndex];
+        key.classList.add('highlight');
+        setTimeout(() => {
+          key.classList.remove('highlight');
+        }, 500);
+      }
+    }
+
+    // 数字を鍵盤の下段に表示
+    function updateDisplay(note, finger) {
+      const keyIndex = notes.indexOf(note);
+      if (keyIndex >= 0 && keyIndex < keys.length) {
+        const key = keys[keyIndex];
+        const numSpan = key.querySelector('.number');
+        if (numSpan) {
+          numSpan.textContent = finger;
+          numSpan.style.display = 'inline';
+        }
+      }
+    }
+
+    // 右手モードの演奏
+    function playRightHand() {
+      if (noteIndex < rightHandNotes.length) {
+        const { note, finger } = rightHandNotes[noteIndex];
+        play(note);
+        highlight(note);
+        updateDisplay(note, finger);
+        noteIndex++;
+        setTimeout(playRightHand, 1000);
+      } else {
+        noteIndex = 0;
+        message.textContent = '左手モード';
+        message.style.color = 'blue';
+        setTimeout(playLeftHand, 2000);
+      }
+    }
+
+    // 左手モードの演奏
+    function playLeftHand() {
+      if (noteIndex < leftHandNotes.length) {
+        const { note, finger } = leftHandNotes[noteIndex];
+        play(note);
+        highlight(note);
+        updateDisplay(note, finger);
+        noteIndex++;
+        setTimeout(playLeftHand, 1000);
+      } else {
+        message.textContent = '終了！';
+        message.style.color = 'green';
+      }
+    }
+
+    // デモボタン
+    demoBtn.addEventListener('click', () => {
+      noteIndex = 0;
+      message.textContent = '右手モード';
+      message.style.color = 'red';
+      playRightHand();
+    });
+  </script>
+</body>
+</html>
