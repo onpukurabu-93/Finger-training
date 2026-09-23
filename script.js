@@ -1,132 +1,84 @@
-let audioContext=null;
-function initAudio(){
-  if(!audioContext){
-    audioContext=new(window.AudioContext||window.webkitAudioContext)();
-  }
-}
-document.addEventListener('touchstart',initAudio,{once:true});
-document.addEventListener('click',initAudio,{once:true});
-const noteFreqR={C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,C4:261.63};
-const noteFreqL={C2:65.41,D2:73.42,E2:82.41,F2:87.31,G2:98,A2:110,B2:123.47,C3:130.81};
-const melodyR=['C3','D3','E3','F3','G3','F3','E3','D3','C3'];
-const melodyL=['C2','D2','E2','C2','D2','E2','G2','E2','D2','C2','D2','E2','C2','D2','E2','C2','D2','E2','G2','E2','D2','C2','D2','E2','C2'];
-const fingerR={C3:1,D3:2,E3:3,F3:4,G3:5,A3:1,B3:2,C4:3};
-const fingerL={C2:5,D2:4,E2:3,F2:5,G2:4,A2:3,B2:2,C3:1};
-const noteNames={C2:'ド',D2:'レ',E2:'ミ',F2:'ファ',G2:'ソ',A2:'ラ',B2:'シ',C3:'ド',C3:'ド',D3:'レ',E3:'ミ',F3:'ファ',G3:'ソ',A3:'ラ',B3:'シ',C4:'ド'};
-const fingerColors={1:'#ff4444',2:'#ff9500',3:'#ffd700',4:'#22c55e',5:'#0ea5e9'};
-let mode='right',rightCleared=false,leftCleared=false,isDemo=false,melodyIdx=0,currentMelody=[];
-const overlay=document.getElementById('keyboard-overlay');
+const keys = document.querySelectorAll('.key');
+const message = document.getElementById('message');
+const startBtn = document.getElementById('startBtn');
 
-function createMarkers(){
-  overlay.innerHTML='';
-  const notes=mode==='right'?['C3','D3','E3','F3','G3','A3','B3','C4']:['C2','D2','E2','F2','G2','A2','B2','C3'];
-  for(let i=0;i<8;i++){
-    const m=document.createElement('div');
-    m.className='key-marker';
-    m.style.background='transparent';
-    m.style.display='flex';
-    m.style.alignItems='center';
-    m.style.justifyContent='center';
-    m.style.fontSize='28px';
-    m.style.fontWeight='bold';
-    m.style.color='white';
-    m.style.textShadow='2px 2px 4px rgba(0,0,0,0.8)';
-    m.textContent='';
-    overlay.appendChild(m);
-  }
+let noteIndex = 0;
+let isRightHand = true;
+
+// 右手モードの音符
+const rightHandNotes = [
+    { note: 'C3', finger: 1 },
+    { note: 'C3', finger: 1 },
+    { note: 'G3', finger: 5 },
+    { note: 'G3', finger: 5 },
+    { note: 'A3', finger: 5 },
+    { note: 'A3', finger: 5 },
+    { note: 'G3', finger: 5 },
+    { note: 'F3', finger: 4 },
+    { note: 'F3', finger: 4 },
+    { note: 'E3', finger: 3 },
+    { note: 'E3', finger: 3 },
+    { note: 'D3', finger: 2 },
+    { note: 'D3', finger: 2 },
+    { note: 'C3', finger: 1 }
+];
+
+// 左手モードの音符
+const leftHandNotes = [
+    { note: 'C3', finger: 5 },
+    { note: 'E3', finger: 3 },
+    { note: 'G3', finger: 1 },
+    { note: 'C4', finger: 1 },
+    { note: 'G3', finger: 1 },
+    { note: 'E3', finger: 3 },
+    { note: 'C3', finger: 5 }
+];
+
+// 鍵盤の音階
+const notes = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5'];
+
+// 音を出す
+function play(note) {
+    const audio = new Audio(`https://cdn.jsdelivr.net/gh/tony-sfc/keyboard-sounds@1.0.0/${note}.mp3`);
+    audio.play();
 }
 
-function highlight(i){
-  const markers=document.querySelectorAll('.key-marker');
-  markers.forEach((m,j)=>{
-    m.classList.toggle('highlight',i===j);
-    if(i===j){
-      const fm=mode==='right'?fingerR:fingerL;
-      const notes=mode==='right'?['C3','D3','E3','F3','G3','A3','B3','C4']:['C2','D2','E2','F2','G2','A2','B2','C3'];
-      m.textContent=fm[notes[i]];
-    }else{
-      m.textContent='';
+// 鍵盤を光らせる
+function highlight(note, isRightHand) {
+    const keyIndex = notes.indexOf(note);
+    if (keyIndex >= 0 && keyIndex < keys.length) {
+        const key = keys[keyIndex];
+        key.style.backgroundColor = 'yellow';
+        setTimeout(() => {
+            key.style.backgroundColor = isRightHand ? '#f0f0f0' : '#e0e0e0';
+        }, 500);
     }
-  });
 }
 
-function clearHL(){
-  document.querySelectorAll('.key-marker').forEach(m=>{
-    m.classList.remove('highlight');
-    m.textContent='';
-  });
-}
-
-function play(note,left){
-  if(!audioContext)initAudio();
-  const osc=audioContext.createOscillator(),gain=audioContext.createGain();
-  osc.connect(gain);gain.connect(audioContext.destination);
-  osc.type='sine';osc.frequency.value=left?noteFreqL[note]:noteFreqR[note];
-  gain.gain.setValueAtTime(0.3,audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01,audioContext.currentTime+1);
-  osc.start();osc.stop(audioContext.currentTime+1);
-}
-
-function getFingerName(f){return['','おやゆび','ひとさしゆび','なかゆび','くすりゆび','こゆび'][f];}
-
-function getNote(x){
-  const r=document.getElementById('kaidan').getBoundingClientRect(),p=(x-r.left)/r.width*100;
-  if(mode==='right'){
-    if(p<12.5)return'C3';if(p<25)return'D3';if(p<37.5)return'E3';if(p<50)return'F3';
-    if(p<62.5)return'G3';if(p<75)return'A3';if(p<87.5)return'B3';return'C4';
-  }else{
-    if(p<12.5)return'C2';if(p<25)return'D2';if(p<37.5)return'E2';if(p<50)return'F2';
-    if(p<62.5)return'G2';if(p<75)return'A2';if(p<87.5)return'B2';return'C3';
-  }
-}
-
-document.getElementById('right-mode-btn').onclick=()=>{if(isDemo)return;mode='right';update();createMarkers();};
-document.getElementById('left-mode-btn').onclick=()=>{if(isDemo||!rightCleared)return;mode='left';update();createMarkers();};
-
-function update(){
-  const rb=document.getElementById('right-mode-btn'),lb=document.getElementById('left-mode-btn');
-  rb.classList.toggle('active',mode==='right');lb.classList.toggle('active',mode==='left');
-  lb.classList.toggle('locked',!rightCleared);
-}
-
-document.getElementById('kaidan').onclick=e=>{
-  initAudio();
-  if(isDemo)return;
-  const note=getNote(e.clientX),fm=mode==='right'?fingerR:fingerL,f=fm[note],nn=noteNames[note];
-  play(note,mode==='left');
-  const msg=document.getElementById('message');
-  msg.textContent=getFingerName(f)+' で '+nn+'!';
-  msg.style.color=fingerColors[f];
-  msg.className='correct';
-};
-
-document.getElementById('demo-btn').onclick=()=>{
-  initAudio();
-  if(isDemo)return;
-  currentMelody=mode==='right'?melodyR:melodyL;melodyIdx=0;isDemo=true;
-  document.getElementById('demo-btn').disabled=true;
-  document.getElementById('message').textContent='お手本を ききます...';
-  document.getElementById('message').style.color='#667eea';
-  function next(){
-    if(melodyIdx>=currentMelody.length){
-      isDemo=false;document.getElementById('demo-btn').disabled=false;clearHL();
-      document.getElementById('message').textContent='チャレンジしてね!';
-      document.getElementById('message').style.color='#667eea';
-      if(mode==='right'&&!rightCleared){rightCleared=true;update();document.getElementById('message').textContent='みぎて クリア! つぎは ひだりて!';}
-      else if(mode==='left'&&!leftCleared){leftCleared=true;document.getElementById('message').textContent='ひだりて クリア! すごい!';}
-      return;
+// 数字を鍵盤の下段に表示
+function updateDisplay(note, finger, isRightHand) {
+    message.textContent = `おやゆび で ド`;
+    message.style.color = 'red';
+    
+    const keyIndex = notes.indexOf(note);
+    if (keyIndex >= 0 && keyIndex < keys.length) {
+        const key = keys[keyIndex];
+        const numSpan = key.querySelector('.number');
+        if (numSpan) {
+            numSpan.textContent = finger;
+            numSpan.style.display = 'inline';
+        }
     }
-    const note=currentMelody[melodyIdx],fm=mode==='right'?fingerR:fingerL,f=fm[note],nn=noteNames[note];
-    const notes=mode==='right'?['C3','D3','E3','F3','G3','A3','B3','C4']:['C2','D2','E2','F2','G2','A2','B2','C3'];
-    highlight(notes.indexOf(note));
-    play(note,mode==='left');
-    const msg=document.getElementById('message');
-    msg.textContent=getFingerName(f)+' で '+nn;
-    msg.style.color=fingerColors[f];
-    melodyIdx++;
-    setTimeout(next,800);
-  }
-  next();
-};
+}
 
-update();createMarkers();
+// 右手モードの演奏
+function playRightHand() {
+    if (noteIndex < rightHandNotes.length) {
+        const { note, finger } = rightHandNotes[noteIndex];
+        play(note);
+        highlight(note, true);
+        updateDisplay(note, finger, true);
+        noteIndex++;
+        setTimeout(playRightHand, 1000);
+    } else {
+        //
