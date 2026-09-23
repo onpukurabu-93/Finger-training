@@ -18,6 +18,8 @@ body {
   border-radius: 20px;
   padding: 15px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
 }
 
 h1 {
@@ -25,38 +27,17 @@ h1 {
   color: #333;
   font-size: 22px;
   margin-bottom: 15px;
+  flex-shrink: 0;
 }
 
-/* 鍵盤（画像） */
-.keyboard-section {
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.kaidan-image {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-  cursor: pointer;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  touch-action: manipulation;
-}
-
-.kaidan-image:active {
-  opacity: 0.7;
-  transform: scale(0.98);
-}
-
-/* 指番号ガイド */
-.finger-guide {
+/* 指番号ガイド（上） */
+.finger-guide-top {
   display: flex;
   justify-content: center;
   gap: 5px;
-  margin-top: 10px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .guide-item {
@@ -83,9 +64,34 @@ h1 {
   color: #666;
 }
 
+/* 鍵盤（画像） */
+.keyboard-section {
+  margin-bottom: 15px;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.kaidan-image {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  touch-action: manipulation;
+}
+
+.kaidan-image:active {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
 /* コントロール */
 .control-section {
   text-align: center;
+  flex-shrink: 0;
 }
 
 #demo-btn {
@@ -141,10 +147,6 @@ h1 {
     font-size: 26px;
   }
   
-  .kaidan-image {
-    max-width: 600px;
-  }
-  
   .guide-item {
     width: 70px;
   }
@@ -157,6 +159,10 @@ h1 {
   
   .guide-label {
     font-size: 13px;
+  }
+  
+  .kaidan-image {
+    max-width: 600px;
   }
   
   #demo-btn {
