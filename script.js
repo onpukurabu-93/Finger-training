@@ -1,7 +1,7 @@
 // 音声の初期化
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-// 音階の周波数（右手：1 オクターブ）
+// 音階の周波数（右手）
 const noteFrequenciesRight = {
   'C3': 130.81,
   'D3': 146.83,
@@ -13,7 +13,7 @@ const noteFrequenciesRight = {
   'C4': 261.63
 };
 
-// 音階の周波数（左手：1 オクターブ低い）
+// 音階の周波数（左手）
 const noteFrequenciesLeft = {
   'C2': 65.41,
   'D2': 73.42,
@@ -25,9 +25,9 @@ const noteFrequenciesLeft = {
   'C3': 130.81
 };
 
-// チューリップの旋律（ドレミファソファミレド）- C3 開始
+// チューリップの旋律
 const melodyRight = ['C3', 'D3', 'E3', 'F3', 'G3', 'F3', 'E3', 'D3', 'C3'];
-const melodyLeft = ['C2', 'D2', 'E2', 'F2', 'G2', 'F2', 'E2', 'D2', 'C2'];
+const melodyLeft = ['C2', 'D2', 'E2', 'C2', 'D2', 'E2', 'G2', 'E2', 'D2', 'C2', 'D2', 'E2', 'C2', 'D2', 'E2', 'C2', 'D2', 'E2', 'G2', 'E2', 'D2', 'C2', 'D2', 'E2', 'C2'];
 
 // 右手の指番号マッピング
 const fingerMapRight = {
@@ -41,16 +41,16 @@ const fingerMapRight = {
   'C4': 3
 };
 
-// 左手の指番号マッピング（逆順）
+// 左手の指番号マッピング
 const fingerMapLeft = {
   'C2': 5,
   'D2': 4,
   'E2': 3,
-  'F2': 2,
-  'G2': 1,
-  'A2': 5,
-  'B2': 4,
-  'C3': 3
+  'F2': 5,
+  'G2': 4,
+  'A2': 3,
+  'B2': 2,
+  'C3': 1
 };
 
 // ドレミ表示
@@ -62,13 +62,16 @@ const noteNames = {
 // 指の色（右手）
 const fingerColorsRight = ['#ff4444', '#ff9500', '#ffd700', '#22c55e', '#0ea5e9'];
 // 指の色（左手）
-const fingerColorsLeft = ['#22c55e', '#0ea5e9', '#667eea', '#ff69b4', '#ff4444'];
+const fingerColorsLeft = ['#ff4444', '#ff69b4', '#667eea', '#0ea5e9', '#22c55e'];
 
-// 現在のモード（'right' or 'left'）
+// 現在のモード
 let currentMode = 'right';
+let rightCleared = false;
+let leftCleared = false;
 
 // 指選択状態
 let selectedFinger = null;
+let isDemoPlaying = false;
 
 // 長押し防止
 let longPressTimer = null;
@@ -98,7 +101,7 @@ function getFingerName(finger) {
   return names[finger];
 }
 
-// クリック位置から音符を判定（8 分割）
+// クリック位置から音符を判定
 function getNoteFromClick(x) {
   const img = document.getElementById('kaidan');
   const rect = img.getBoundingClientRect();
@@ -112,8 +115,8 @@ function getNoteFromClick(x) {
     if (relativeX < 37.5) return 'E3';
     if (relativeX < 50) return 'F3';
     if (relativeX < 62.5) return 'G3';
-    if (relativeX < 75) return 'A3';
-    if (relativeX < 87.5) return 'B3';
+    if (relativeX < 70) return 'A3';
+    if (relativeX < 82) return 'B3';
     return 'C4';
   } else {
     if (relativeX < 12.5) return 'C2';
@@ -147,6 +150,51 @@ function preventLongPress(element) {
   });
 }
 
+// モード切替
+document.getElementById('right-mode-btn').addEventListener('click', () => {
+  if (isDemoPlaying) return;
+  currentMode = 'right';
+  updateModeButtons();
+  updateFingerGuide();
+  document.getElementById('message').textContent = 'みぎてモード';
+});
+
+document.getElementById('left-mode-btn').addEventListener('click', () => {
+  if (isDemoPlaying || !rightCleared) return;
+  currentMode = 'left';
+  updateModeButtons();
+  updateFingerGuide();
+  document.getElementById('message').textContent = 'ひだりてモード';
+});
+
+function updateModeButtons() {
+  const rightBtn = document.getElementById('right-mode-btn');
+  const leftBtn = document.getElementById('left-mode-btn');
+  
+  if (currentMode === 'right') {
+    rightBtn.classList.add('active');
+    leftBtn.classList.remove('active');
+  } else {
+    rightBtn.classList.remove('active');
+    leftBtn.classList.add('active');
+  }
+  
+  if (!rightCleared) {
+    leftBtn.classList.add('locked');
+  } else {
+    leftBtn.classList.remove('locked');
+  }
+}
+
+function updateFingerGuide() {
+  const colors = currentMode === 'right' ? fingerColorsRight : fingerColorsLeft;
+  document.querySelectorAll('.guide-number').forEach((num, i) => {
+    num.style.background = colors[i];
+    num.parentElement.querySelector('.guide-label').style.color = colors[i];
+    num.parentElement.querySelector('.finger-svg ellipse').setAttribute('fill', colors[i]);
+  });
+}
+
 // 指番号ガイドをクリック
 document.querySelectorAll('.guide-item').forEach(guide => {
   preventLongPress(guide);
@@ -155,19 +203,11 @@ document.querySelectorAll('.guide-item').forEach(guide => {
     const fingerNum = parseInt(guide.querySelector('.guide-number').textContent);
     selectedFinger = fingerNum;
     
-    document.querySelectorAll('.guide-number').forEach(g => {
-      if (currentMode === 'right') {
-        g.style.background = fingerColorsRight[parseInt(g.textContent) - 1];
-      } else {
-        g.style.background = fingerColorsLeft[parseInt(g.textContent) - 1];
-      }
+    const colors = currentMode === 'right' ? fingerColorsRight : fingerColorsLeft;
+    document.querySelectorAll('.guide-number').forEach((g, i) => {
+      g.style.background = colors[i];
     });
-    
-    if (currentMode === 'right') {
-      guide.querySelector('.guide-number').style.background = fingerColorsRight[fingerNum - 1];
-    } else {
-      guide.querySelector('.guide-number').style.background = fingerColorsLeft[fingerNum - 1];
-    }
+    guide.querySelector('.guide-number').style.background = colors[fingerNum - 1];
     
     document.getElementById('message').textContent = getFingerName(fingerNum) + ' を えらんだね！つぎは けんばんを タップしてね';
     document.getElementById('message').className = 'correct';
@@ -179,8 +219,11 @@ const kaidanImg = document.getElementById('kaidan');
 preventLongPress(kaidanImg);
 
 kaidanImg.addEventListener('click', (e) => {
+  if (isDemoPlaying) return;
+  
   const note = getNoteFromClick(e.clientX);
-  const finger = currentMode === 'right' ? fingerMapRight[note] : fingerMapLeft[note];
+  const fingerMap = currentMode === 'right' ? fingerMapRight : fingerMapLeft;
+  const finger = fingerMap[note];
   const noteName = noteNames[note];
   
   playNote(note, currentMode === 'left');
@@ -206,8 +249,11 @@ const demoBtn = document.getElementById('demo-btn');
 preventLongPress(demoBtn);
 
 demoBtn.addEventListener('click', () => {
+  if (isDemoPlaying) return;
+  
   const melody = currentMode === 'right' ? melodyRight : melodyLeft;
   let noteIndex = 0;
+  isDemoPlaying = true;
   
   demoBtn.disabled = true;
   document.getElementById('message').textContent = 'お手本を ききます...';
@@ -215,20 +261,34 @@ demoBtn.addEventListener('click', () => {
   
   function playNextNote() {
     if (noteIndex >= melody.length) {
+      isDemoPlaying = false;
       demoBtn.disabled = false;
+      if (currentMode === 'right' && !rightCleared) {
+        rightCleared = true;
+        updateModeButtons();
+        document.getElementById('message').textContent = 'みぎて クリア！ひだりて できるよ！';
+      } else if (currentMode === 'left' && !leftCleared) {
+        leftCleared = true;
+        document.getElementById('message').textContent = 'ひだりて クリア！すごいね！';
+      }
       return;
     }
     
     const note = melody[noteIndex];
-    const finger = currentMode === 'right' ? fingerMapRight[note] : fingerMapLeft[note];
+    const fingerMap = currentMode === 'right' ? fingerMapRight : fingerMapLeft;
+    const finger = fingerMap[note];
     const noteName = noteNames[note];
     
     playNote(note, currentMode === 'left');
     document.getElementById('message').textContent = getFingerName(finger) + ' で ' + noteName;
     
     noteIndex++;
-    setTimeout(playNextNote, 800);
+    setTimeout(playNextNote, 600);
   }
   
   playNextNote();
 });
+
+// 初期化
+updateModeButtons();
+updateFingerGuide();
