@@ -59,16 +59,19 @@ const noteNames = {
   'C3': 'ド', 'D3': 'レ', 'E3': 'ミ', 'F3': 'ファ', 'G3': 'ソ', 'A3': 'ラ', 'B3': 'シ', 'C4': 'ド'
 };
 
+// 指の色（右手）
+const fingerColorsRight = ['#ff4444', '#ff9500', '#ffd700', '#22c55e', '#0ea5e9'];
+// 指の色（左手）
+const fingerColorsLeft = ['#22c55e', '#0ea5e9', '#667eea', '#ff69b4', '#ff4444'];
+
 // 現在のモード（'right' or 'left'）
 let currentMode = 'right';
 
 // 指選択状態
 let selectedFinger = null;
 
-// 指の色（右手）
-const fingerColorsRight = ['#ff6b6b', '#ffa500', '#ffd700', '#4ecdc4', '#45b7d1'];
-// 指の色（左手）
-const fingerColorsLeft = ['#4ecdc4', '#45b7d1', '#667eea', '#ff69b4', '#ff6b6b'];
+// 長押し防止
+let longPressTimer = null;
 
 // 音を鳴らす関数
 function playNote(note, isLeft) {
@@ -124,8 +127,30 @@ function getNoteFromClick(x) {
   }
 }
 
+// 長押し防止関数
+function preventLongPress(element) {
+  element.addEventListener('touchstart', () => {
+    longPressTimer = setTimeout(() => {}, 1000);
+  });
+  
+  element.addEventListener('touchend', () => {
+    clearTimeout(longPressTimer);
+  });
+  
+  element.addEventListener('touchmove', () => {
+    clearTimeout(longPressTimer);
+  });
+  
+  element.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
+  });
+}
+
 // 指番号ガイドをクリック
 document.querySelectorAll('.guide-item').forEach(guide => {
+  preventLongPress(guide);
+  
   guide.addEventListener('click', () => {
     const fingerNum = parseInt(guide.querySelector('.guide-number').textContent);
     selectedFinger = fingerNum;
@@ -150,7 +175,10 @@ document.querySelectorAll('.guide-item').forEach(guide => {
 });
 
 // 画像クリック処理
-document.getElementById('kaidan').addEventListener('click', (e) => {
+const kaidanImg = document.getElementById('kaidan');
+preventLongPress(kaidanImg);
+
+kaidanImg.addEventListener('click', (e) => {
   const note = getNoteFromClick(e.clientX);
   const finger = currentMode === 'right' ? fingerMapRight[note] : fingerMapLeft[note];
   const noteName = noteNames[note];
@@ -174,17 +202,20 @@ document.getElementById('kaidan').addEventListener('click', (e) => {
 });
 
 // お手本演奏
-document.getElementById('demo-btn').addEventListener('click', () => {
+const demoBtn = document.getElementById('demo-btn');
+preventLongPress(demoBtn);
+
+demoBtn.addEventListener('click', () => {
   const melody = currentMode === 'right' ? melodyRight : melodyLeft;
   let noteIndex = 0;
   
-  document.getElementById('demo-btn').disabled = true;
+  demoBtn.disabled = true;
   document.getElementById('message').textContent = 'お手本を ききます...';
   document.getElementById('message').className = '';
   
   function playNextNote() {
     if (noteIndex >= melody.length) {
-      document.getElementById('demo-btn').disabled = false;
+      demoBtn.disabled = false;
       return;
     }
     
