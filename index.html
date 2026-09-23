@@ -10,50 +10,56 @@
   <div class="container">
     <h1>ゆびトレ！けんばん</h1>
     
+    <!-- モード選択 -->
+    <div class="mode-select">
+      <button id="right-mode-btn" class="mode-btn active">みぎて</button>
+      <button id="left-mode-btn" class="mode-btn locked">ひだりて</button>
+    </div>
+    
     <!-- 指番号ガイド（タイトル下） -->
     <div class="finger-guide">
       <div class="guide-item" data-finger="1">
-        <div class="guide-number" style="background: #ff6b6b;">1</div>
-        <div class="guide-label">おやゆび</div>
+        <div class="guide-number" style="background: #ff4444;">1</div>
+        <div class="guide-label" style="color: #ff4444;">おやゆび</div>
         <div class="finger-icon">
           <svg viewBox="0 0 50 80" class="finger-svg">
-            <ellipse cx="25" cy="40" rx="18" ry="30" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="25" cy="40" rx="18" ry="30" fill="#ff4444" stroke="black" stroke-width="2"/>
           </svg>
         </div>
       </div>
       <div class="guide-item" data-finger="2">
-        <div class="guide-number" style="background: #ffa500;">2</div>
-        <div class="guide-label">ひとさしゆび</div>
+        <div class="guide-number" style="background: #ff9500;">2</div>
+        <div class="guide-label" style="color: #ff9500;">ひとさしゆび</div>
         <div class="finger-icon">
           <svg viewBox="0 0 50 80" class="finger-svg">
-            <ellipse cx="25" cy="40" rx="12" ry="35" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="25" cy="40" rx="12" ry="35" fill="#ff9500" stroke="black" stroke-width="2"/>
           </svg>
         </div>
       </div>
       <div class="guide-item" data-finger="3">
         <div class="guide-number" style="background: #ffd700;">3</div>
-        <div class="guide-label">なかゆび</div>
+        <div class="guide-label" style="color: #ffd700;">なかゆび</div>
         <div class="finger-icon">
           <svg viewBox="0 0 50 80" class="finger-svg">
-            <ellipse cx="25" cy="40" rx="12" ry="38" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="25" cy="40" rx="12" ry="38" fill="#ffd700" stroke="black" stroke-width="2"/>
           </svg>
         </div>
       </div>
       <div class="guide-item" data-finger="4">
-        <div class="guide-number" style="background: #4ecdc4;">4</div>
-        <div class="guide-label">くすりゆび</div>
+        <div class="guide-number" style="background: #22c55e;">4</div>
+        <div class="guide-label" style="color: #22c55e;">くすりゆび</div>
         <div class="finger-icon">
           <svg viewBox="0 0 50 80" class="finger-svg">
-            <ellipse cx="25" cy="40" rx="11" ry="34" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="25" cy="40" rx="11" ry="34" fill="#22c55e" stroke="black" stroke-width="2"/>
           </svg>
         </div>
       </div>
       <div class="guide-item" data-finger="5">
-        <div class="guide-number" style="background: #45b7d1;">5</div>
-        <div class="guide-label">こゆび</div>
+        <div class="guide-number" style="background: #0ea5e9;">5</div>
+        <div class="guide-label" style="color: #0ea5e9;">こゆび</div>
         <div class="finger-icon">
           <svg viewBox="0 0 50 80" class="finger-svg">
-            <ellipse cx="25" cy="40" rx="9" ry="28" fill="white" stroke="black" stroke-width="2"/>
+            <ellipse cx="25" cy="40" rx="9" ry="28" fill="#0ea5e9" stroke="black" stroke-width="2"/>
           </svg>
         </div>
       </div>
@@ -62,12 +68,12 @@
     <!-- 音の階段鍵盤（画像） -->
     <div class="keyboard-section">
       <img src="1kaidan_0.png?v=2" alt="音の階段鍵盤" class="kaidan-image" id="kaidan">
+      <div id="message"></div>
     </div>
 
     <!-- コントロール -->
     <div class="control-section">
       <button id="demo-btn">お手本を きく</button>
-      <div id="message"></div>
     </div>
   </div>
 
