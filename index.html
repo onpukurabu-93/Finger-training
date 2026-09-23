@@ -1,170 +1,42 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ゆびトレ！けんばん</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>ゆびトレ！けんばん</h1>
+    
+    <!-- 音の階段鍵盤（画像） -->
+    <div class="keyboard-section">
+      <img src="1kaidan_0.png?v=2" alt="音の階段鍵盤" class="kaidan-image" id="kaidan">
+      <div class="finger-guide">
+        <div class="guide-item">
+          <div class="guide-number">1</div>
+          <div class="guide-label">おやゆび</div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">2</div>
+          <div class="guide-label">ひとさしゆび</div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">3</div>
+          <div class="guide-label">なかゆび</div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">4</div>
+          <div class="guide-label">くすりゆび</div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">5</div>
+          <div class="guide-label">こゆび</div>
+        </div>
+      </div>
+    </div>
 
-body {
-  font-family: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN", "メイリオ", sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  padding: 10px;
-}
-
-.container {
-  max-width: 100%;
-  margin: 0 auto;
-  background: white;
-  border-radius: 20px;
-  padding: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-h1 {
-  text-align: center;
-  color: #333;
-  font-size: 22px;
-  margin-bottom: 15px;
-}
-
-/* 鍵盤（画像） */
-.keyboard-section {
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.kaidan-image {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-  cursor: pointer;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  touch-action: manipulation;
-}
-
-.kaidan-image:active {
-  opacity: 0.7;
-  transform: scale(0.98);
-}
-
-/* 指番号ガイド */
-.finger-guide {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.guide-item {
-  width: 55px;
-  text-align: center;
-}
-
-.guide-number {
-  width: 40px;
-  height: 40px;
-  background: #ff6b6b;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0 auto 5px;
-}
-
-.guide-label {
-  font-size: 11px;
-  color: #666;
-}
-
-/* コントロール */
-.control-section {
-  text-align: center;
-}
-
-#demo-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  font-size: 18px;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(102,126,234,0.4);
-}
-
-#demo-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 20px rgba(102,126,234,0.6);
-}
-
-#demo-btn:active {
-  transform: translateY(0);
-}
-
-#message {
-  margin-top: 15px;
-  font-size: 16px;
-  font-weight: bold;
-  min-height: 30px;
-}
-
-#message.correct {
-  color: #4ecdc4;
-  animation: bounce 0.5s ease;
-}
-
-#message.wrong {
-  color: #ff6b6b;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-/* iPad 対応 */
-@media (min-width: 768px) {
-  .container {
-    max-width: 700px;
-    padding: 20px;
-  }
-  
-  h1 {
-    font-size: 26px;
-  }
-  
-  .kaidan-image {
-    max-width: 600px;
-  }
-  
-  .guide-item {
-    width: 70px;
-  }
-  
-  .guide-number {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-  }
-  
-  .guide-label {
-    font-size: 13px;
-  }
-  
-  #demo-btn {
-    padding: 18px 50px;
-    font-size: 20px;
-  }
-  
-  #message {
-    font-size: 18px;
-  }
-}
+    <!-- コントロール -->
+    <div class="control-section">
+      <button
