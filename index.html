@@ -10,33 +10,42 @@
   <div class="container">
     <h1>ゆびトレ！けんばん</h1>
     
+    <!-- 指番号ガイド（上） -->
+    <div class="finger-guide-top">
+      <div class="guide-item">
+        <div class="guide-number">1</div>
+        <div class="guide-label">おやゆび</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-number">2</div>
+        <div class="guide-label">ひとさしゆび</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-number">3</div>
+        <div class="guide-label">なかゆび</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-number">4</div>
+        <div class="guide-label">くすりゆび</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-number">5</div>
+        <div class="guide-label">こゆび</div>
+      </div>
+    </div>
+
     <!-- 音の階段鍵盤（画像） -->
     <div class="keyboard-section">
       <img src="1kaidan_0.png?v=2" alt="音の階段鍵盤" class="kaidan-image" id="kaidan">
-      <div class="finger-guide">
-        <div class="guide-item">
-          <div class="guide-number">1</div>
-          <div class="guide-label">おやゆび</div>
-        </div>
-        <div class="guide-item">
-          <div class="guide-number">2</div>
-          <div class="guide-label">ひとさしゆび</div>
-        </div>
-        <div class="guide-item">
-          <div class="guide-number">3</div>
-          <div class="guide-label">なかゆび</div>
-        </div>
-        <div class="guide-item">
-          <div class="guide-number">4</div>
-          <div class="guide-label">くすりゆび</div>
-        </div>
-        <div class="guide-item">
-          <div class="guide-number">5</div>
-          <div class="guide-label">こゆび</div>
-        </div>
-      </div>
     </div>
 
     <!-- コントロール -->
     <div class="control-section">
-      <button
+      <button id="demo-btn">お手本を きく</button>
+      <div id="message"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
