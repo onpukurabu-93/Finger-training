@@ -36,7 +36,7 @@ h1 {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 15px;
   flex-wrap: nowrap;
   flex-shrink: 0;
@@ -48,13 +48,19 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 50px;
+  min-width: 60px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.guide-item:hover {
+  transform: scale(1.05);
 }
 
 .guide-number {
   width: 40px;
   height: 40px;
-  background: #ff6b6b;
+  background: #667eea;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -71,6 +77,20 @@ h1 {
   color: #666;
   text-align: center;
   white-space: nowrap;
+  margin-bottom: 3px;
+}
+
+.finger-icon {
+  width: 30px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.finger-svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* 鍵盤（画像） */
@@ -157,7 +177,7 @@ h1 {
   }
   
   .guide-item {
-    min-width: 65px;
+    min-width: 75px;
   }
   
   .guide-number {
@@ -168,6 +188,11 @@ h1 {
   
   .guide-label {
     font-size: 13px;
+  }
+  
+  .finger-icon {
+    width: 40px;
+    height: 50px;
   }
   
   .kaidan-image {
