@@ -1,4 +1,11 @@
-const audioContext=new(window.AudioContext||window.webkitAudioContext)();
+let audioContext=null;
+function initAudio(){
+  if(!audioContext){
+    audioContext=new(window.AudioContext||window.webkitAudioContext)();
+  }
+}
+document.addEventListener('touchstart',initAudio,{once:true});
+document.addEventListener('click',initAudio,{once:true});
 const noteFreqR={C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,C4:261.63};
 const noteFreqL={C2:65.41,D2:73.42,E2:82.41,F2:87.31,G2:98,A2:110,B2:123.47,C3:130.81};
 const melodyR=['C3','D3','E3','F3','G3','F3','E3','D3','C3'];
@@ -52,6 +59,7 @@ function clearHL(){
 }
 
 function play(note,left){
+  if(!audioContext)initAudio();
   const osc=audioContext.createOscillator(),gain=audioContext.createGain();
   osc.connect(gain);gain.connect(audioContext.destination);
   osc.type='sine';osc.frequency.value=left?noteFreqL[note]:noteFreqR[note];
@@ -65,22 +73,4 @@ function getFingerName(f){return['','おやゆび','ひとさしゆび','なか�
 function getNote(x){
   const r=document.getElementById('kaidan').getBoundingClientRect(),p=(x-r.left)/r.width*100;
   if(mode==='right'){
-    if(p<12.5)return'C3';if(p<25)return'D3';if(p<37.5)return'E3';if(p<50)return'F3';
-    if(p<62.5)return'G3';if(p<75)return'A3';if(p<87.5)return'B3';return'C4';
-  }else{
-    if(p<12.5)return'C2';if(p<25)return'D2';if(p<37.5)return'E2';if(p<50)return'F2';
-    if(p<62.5)return'G2';if(p<75)return'A2';if(p<87.5)return'B2';return'C3';
-  }
-}
-
-document.getElementById('right-mode-btn').onclick=()=>{if(isDemo)return;mode='right';update();createMarkers();};
-document.getElementById('left-mode-btn').onclick=()=>{if(isDemo||!rightCleared)return;mode='left';update();createMarkers();};
-
-function update(){
-  const rb=document.getElementById('right-mode-btn'),lb=document.getElementById('left-mode-btn');
-  rb.classList.toggle('active',mode==='right');lb.classList.toggle('active',mode==='left');
-  lb.classList.toggle('locked',!rightCleared);
-}
-
-document.getElementById('kaidan').onclick=e=>{
-  i
+    if(p<12.5)return'C3
