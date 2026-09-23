@@ -73,4 +73,53 @@ function getFingerName(f){return['','おやゆび','ひとさしゆび','なか�
 function getNote(x){
   const r=document.getElementById('kaidan').getBoundingClientRect(),p=(x-r.left)/r.width*100;
   if(mode==='right'){
-    if(p<12.5)return'C3
+    if(p<12.5)return'C3';if(p<25)return'D3';if(p<37.5)return'E3';if(p<50)return'F3';
+    if(p<62.5)return'G3';if(p<75)return'A3';if(p<87.5)return'B3';return'C4';
+  }else{
+    if(p<12.5)return'C2';if(p<25)return'D2';if(p<37.5)return'E2';if(p<50)return'F2';
+    if(p<62.5)return'G2';if(p<75)return'A2';if(p<87.5)return'B2';return'C3';
+  }
+}
+
+document.getElementById('right-mode-btn').onclick=()=>{if(isDemo)return;mode='right';update();createMarkers();};
+document.getElementById('left-mode-btn').onclick=()=>{if(isDemo||!rightCleared)return;mode='left';update();createMarkers();};
+
+function update(){
+  const rb=document.getElementById('right-mode-btn'),lb=document.getElementById('left-mode-btn');
+  rb.classList.toggle('active',mode==='right');lb.classList.toggle('active',mode==='left');
+  lb.classList.toggle('locked',!rightCleared);
+}
+
+document.getElementById('kaidan').onclick=e=>{
+  initAudio();
+  if(isDemo)return;
+  const note=getNote(e.clientX),fm=mode==='right'?fingerR:fingerL,f=fm[note],nn=noteNames[note];
+  play(note,mode==='left');
+  document.getElementById('message').textContent=getFingerName(f)+' で '+nn+'!';
+  document.getElementById('message').className='correct';
+};
+
+document.getElementById('demo-btn').onclick=()=>{
+  initAudio();
+  if(isDemo)return;
+  currentMelody=mode==='right'?melodyR:melodyL;melodyIdx=0;isDemo=true;
+  document.getElementById('demo-btn').disabled=true;
+  function next(){
+    if(melodyIdx>=currentMelody.length){
+      isDemo=false;document.getElementById('demo-btn').disabled=false;clearHL();
+      if(mode==='right'&&!rightCleared){rightCleared=true;update();document.getElementById('message').textContent='みぎて クリア!';}
+      else if(mode==='left'&&!leftCleared){leftCleared=true;document.getElementById('message').textContent='ひだりて クリア!';}
+      return;
+    }
+    const note=currentMelody[melodyIdx],fm=mode==='right'?fingerR:fingerL,f=fm[note],nn=noteNames[note];
+    const notes=mode==='right'?['C3','D3','E3','F3','G3','A3','B3','C4']:['C2','D2','E2','F2','G2','A2','B2','C3'];
+    highlight(notes.indexOf(note));
+    play(note,mode==='left');
+    document.getElementById('message').textContent=getFingerName(f)+' で '+nn;
+    melodyIdx++;
+    setTimeout(next,800);
+  }
+  next();
+};
+
+update();createMarkers();
