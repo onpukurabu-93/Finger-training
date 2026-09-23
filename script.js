@@ -39,7 +39,7 @@ const notes = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F4',
 
 // 音を出す
 function play(note) {
-    const audio = new Audio(`https://cdn.jsdelivr.net/gh/tony-sfc/keyboard-sounds@1.0.0/${note}.mp3`);
+    const audio = new Audio(`https://cdn.jsdelivr.net/gh/tony-sfc/keyboard-sounds@1.0.0/${note.toLowerCase()}.mp3`);
     audio.play();
 }
 
@@ -81,4 +81,29 @@ function playRightHand() {
         noteIndex++;
         setTimeout(playRightHand, 1000);
     } else {
-        //
+        // 右手モード終了、左手モードへ
+        noteIndex = 0;
+        isRightHand = false;
+        message.textContent = '左手モード';
+        message.style.color = 'blue';
+        setTimeout(playLeftHand, 2000);
+    }
+}
+
+// 左手モードの演奏
+function playLeftHand() {
+    if (noteIndex < leftHandNotes.length) {
+        const { note, finger } = leftHandNotes[noteIndex];
+        play(note);
+        highlight(note, false);
+        updateDisplay(note, finger, false);
+        noteIndex++;
+        setTimeout(playLeftHand, 1000);
+    } else {
+        // 終了
+        message.textContent = '終了！';
+        message.style.color = 'green';
+    }
+}
+
+//
