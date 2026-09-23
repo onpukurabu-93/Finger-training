@@ -13,9 +13,21 @@ const noteFrequencies = {
 // チューリップの旋律（ドレミファソファミレド）
 const melody = ['C', 'D', 'E', 'F', 'G', 'F', 'E', 'D', 'C'];
 
+// 指番号のマッピング
+const fingerMap = {
+  'C': 1,  // ドは親指
+  'D': 2,  // レは人差し指
+  'E': 3,  // ミは中指
+  'F': 4,  // ファは薬指
+  'G': 5   // ソは小指
+};
+
 // 現在の指示（デモ再生中のみ）
 let currentDemoIndex = 0;
 let isDemoPlaying = false;
+
+// 指選択状態
+let selectedFinger = null;
 
 // 音を鳴らす関数
 function playNote(note) {
@@ -35,61 +47,73 @@ function playNote(note) {
   oscillator.stop(audioContext.currentTime + 1);
 }
 
-// 鍵盤をタップしたときの処理
-document.querySelectorAll('.key').forEach(key => {
-  key.addEventListener('click', () => {
-    const note = key.dataset.note;
-    const finger = parseInt(key.dataset.finger);
-    
-    // 音を出す
-    playNote(note);
-    
-    // 鍵盤のアニメーション
-    key.classList.add('pressed');
-    setTimeout(() => key.classList.remove('pressed'), 200);
-    
-    // 正解判定（デモ再生中のみ）
-    if (isDemoPlaying) {
-      const expectedFinger = parseInt(document.querySelector(`.key[data-note="${melody[currentDemoIndex]}"]`).dataset.finger);
-      
-      if (finger === expectedFinger) {
-        // 正解
-        document.querySelectorAll('.finger').forEach(f => f.classList.remove('correct', 'wrong'));
-        document.querySelector(`.finger[data-finger="${finger}"]`).classList.add('correct');
-        document.getElementById('message').textContent = '⭕️ せいかい！';
-        document.getElementById('message').className = 'correct';
-        
-        currentDemoIndex++;
-        
-        // 曲が終わったら
-        if (currentDemoIndex >= melody.length) {
-          isDemoPlaying = false;
-          document.getElementById('demo-btn').disabled = false;
-          setTimeout(() => {
-            document.getElementById('message').textContent = 'よくできました！🎵';
-            document.getElementById('message').className = 'correct';
-          }, 1000);
-        }
-      } else {
-        // 間違い（でも❌は出さない）
-        document.getElementById('message').textContent = 'つぎは ' + getFingerName(expectedFinger) + ' だよ';
-        document.getElementById('message').className = 'wrong';
-      }
-    } else {
-      // 自由練習モード
-      document.querySelectorAll('.finger').forEach(f => f.classList.remove('correct', 'wrong'));
-      document.querySelector(`.finger[data-finger="${finger}"]`).classList.add('correct');
-      document.getElementById('message').textContent = getFingerName(finger) + ' で ひいたね！';
-      document.getElementById('message').className = 'correct';
-    }
-  });
-});
-
 // 指の名前を取得
 function getFingerName(finger) {
   const names = ['', 'おやゆび', 'ひとさしゆび', 'なかゆび', 'くすりゆび', 'こゆび'];
   return names[finger];
 }
+
+// クリック位置から音符を判定
+function getNoteFromClick(x) {
+  const img = document.getElementById('kaidan');
+  const rect = img.getBoundingClientRect();
+  const imgWidth = rect.width;
+  
+  // 画像の相対位置を計算（％）
+  const relativeX = (x - rect.left) / imgWidth * 100;
+  
+  // 仮の判定（画像の幅を 5 等分）
+  if (relativeX < 20) return 'C';
+  if (relativeX < 40) return 'D';
+  if (relativeX < 60) return 'E';
+  if (relativeX < 80) return 'F';
+  return 'G';
+}
+
+// 指イラストをクリック
+document.querySelectorAll('.finger').forEach(finger => {
+  finger.addEventListener('click', () => {
+    const fingerNum = parseInt(finger.dataset.finger);
+    
+    // 指を選択状態に
+    document.querySelectorAll('.finger').forEach(f => f.classList.remove('correct', 'wrong'));
+    finger.classList.add('correct');
+    selectedFinger = fingerNum;
+    
+    document.getElementById('message').textContent = getFingerName(fingerNum) + ' を えらんだね！つぎは けんばんを タップしてね';
+    document.getElementById('message').className = 'correct';
+  });
+});
+
+// 画像クリック処理
+document.getElementById('kaidan').addEventListener('click', (e) => {
+  const note = getNoteFromClick(e.clientX);
+  const finger = fingerMap[note];
+  
+  // 音を出す
+  playNote(note);
+  
+  // 指が選択されているかチェック
+  if (selectedFinger !== null) {
+    if (selectedFinger === finger) {
+      // 指も鍵盤も正解
+      document.getElementById('message').textContent = '⭕️ せいかい！' + getFingerName(finger) + ' で ' + note + '！';
+      document.getElementById('message').className = 'correct';
+      selectedFinger = null; // リセット
+    } else {
+      // 指が違う
+      document.getElementById('message').textContent = 'ちがうよ〜 ' + getFingerName(finger) + ' だよ';
+      document.getElementById('message').className = 'wrong';
+      selectedFinger = null; // リセット
+    }
+  } else {
+    // 指を選択していない（自由練習モード）
+    document.querySelectorAll('.finger').forEach(f => f.classList.remove('correct', 'wrong'));
+    document.querySelector(`.finger[data-finger="${finger}"]`).classList.add('correct');
+    document.getElementById('message').textContent = getFingerName(finger) + ' で ' + note + '！';
+    document.getElementById('message').className = 'correct';
+  }
+});
 
 // お手本演奏
 document.getElementById('demo-btn').addEventListener('click', () => {
@@ -111,15 +135,10 @@ document.getElementById('demo-btn').addEventListener('click', () => {
     }
     
     const note = melody[noteIndex];
-    const key = document.querySelector(`.key[data-note="${note}"]`);
-    const finger = parseInt(key.dataset.finger);
+    const finger = fingerMap[note];
     
     // 音を出す
     playNote(note);
-    
-    // 鍵盤のアニメーション
-    key.classList.add('pressed');
-    setTimeout(() => key.classList.remove('pressed'), 200);
     
     // 指のハイライト
     document.querySelectorAll('.finger').forEach(f => f.classList.remove('correct', 'wrong'));
@@ -132,15 +151,4 @@ document.getElementById('demo-btn').addEventListener('click', () => {
   }
   
   playNextNote();
-});
-
-// 指もタップ可能に
-document.querySelectorAll('.finger').forEach(finger => {
-  finger.addEventListener('click', () => {
-    const fingerNum = parseInt(finger.dataset.finger);
-    document.querySelectorAll('.finger').forEach(f => f.classList.remove('correct', 'wrong'));
-    finger.classList.add('correct');
-    document.getElementById('message').textContent = getFingerName(fingerNum) + ' だね！';
-    document.getElementById('message').className = 'correct';
-  });
 });
