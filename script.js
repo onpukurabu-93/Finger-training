@@ -13,8 +13,7 @@ const melodyL=['C2','D2','E2','C2','D2','E2','G2','E2','D2','C2','D2','E2','C2',
 const fingerR={C3:1,D3:2,E3:3,F3:4,G3:5,A3:1,B3:2,C4:3};
 const fingerL={C2:5,D2:4,E2:3,F2:5,G2:4,A2:3,B2:2,C3:1};
 const noteNames={C2:'ド',D2:'レ',E2:'ミ',F2:'ファ',G2:'ソ',A2:'ラ',B2:'シ',C3:'ド',C3:'ド',D3:'レ',E3:'ミ',F3:'ファ',G3:'ソ',A3:'ラ',B3:'シ',C4:'ド'};
-const colorsR=['#ff4444','#ff9500','#ffd700','#22c55e','#0ea5e9','#ff4444','#ff69b4','#667eea'];
-const colorsL=['#0ea5e9','#0ea5e9','#667eea','#0ea5e9','#0ea5e9','#667eea','#ff69b4','#ff4444'];
+const fingerColors={1:'#ff4444',2:'#ff9500',3:'#ffd700',4:'#22c55e',5:'#0ea5e9'};
 let mode='right',rightCleared=false,leftCleared=false,isDemo=false,melodyIdx=0,currentMelody=[];
 const overlay=document.getElementById('keyboard-overlay');
 
@@ -95,8 +94,10 @@ document.getElementById('kaidan').onclick=e=>{
   if(isDemo)return;
   const note=getNote(e.clientX),fm=mode==='right'?fingerR:fingerL,f=fm[note],nn=noteNames[note];
   play(note,mode==='left');
-  document.getElementById('message').textContent=getFingerName(f)+' で '+nn+'!';
-  document.getElementById('message').className='correct';
+  const msg=document.getElementById('message');
+  msg.textContent=getFingerName(f)+' で '+nn+'!';
+  msg.style.color=fingerColors[f];
+  msg.className='correct';
 };
 
 document.getElementById('demo-btn').onclick=()=>{
@@ -104,18 +105,24 @@ document.getElementById('demo-btn').onclick=()=>{
   if(isDemo)return;
   currentMelody=mode==='right'?melodyR:melodyL;melodyIdx=0;isDemo=true;
   document.getElementById('demo-btn').disabled=true;
+  document.getElementById('message').textContent='お手本を ききます...';
+  document.getElementById('message').style.color='#667eea';
   function next(){
     if(melodyIdx>=currentMelody.length){
       isDemo=false;document.getElementById('demo-btn').disabled=false;clearHL();
-      if(mode==='right'&&!rightCleared){rightCleared=true;update();document.getElementById('message').textContent='みぎて クリア!';}
-      else if(mode==='left'&&!leftCleared){leftCleared=true;document.getElementById('message').textContent='ひだりて クリア!';}
+      document.getElementById('message').textContent='チャレンジしてね!';
+      document.getElementById('message').style.color='#667eea';
+      if(mode==='right'&&!rightCleared){rightCleared=true;update();document.getElementById('message').textContent='みぎて クリア! つぎは ひだりて!';}
+      else if(mode==='left'&&!leftCleared){leftCleared=true;document.getElementById('message').textContent='ひだりて クリア! すごい!';}
       return;
     }
     const note=currentMelody[melodyIdx],fm=mode==='right'?fingerR:fingerL,f=fm[note],nn=noteNames[note];
     const notes=mode==='right'?['C3','D3','E3','F3','G3','A3','B3','C4']:['C2','D2','E2','F2','G2','A2','B2','C3'];
     highlight(notes.indexOf(note));
     play(note,mode==='left');
-    document.getElementById('message').textContent=getFingerName(f)+' で '+nn;
+    const msg=document.getElementById('message');
+    msg.textContent=getFingerName(f)+' で '+nn;
+    msg.style.color=fingerColors[f];
     melodyIdx++;
     setTimeout(next,800);
   }
