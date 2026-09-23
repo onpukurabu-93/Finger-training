@@ -13,13 +13,18 @@ const overlay=document.getElementById('keyboard-overlay');
 
 function createMarkers(){
   overlay.innerHTML='';
-  const colors=mode==='right'?colorsR:colorsL;
   const fm=mode==='right'?fingerR:fingerL;
   const notes=mode==='right'?['C3','D3','E3','F3','G3','A3','B3','C4']:['C2','D2','E2','F2','G2','A2','B2','C3'];
   for(let i=0;i<8;i++){
     const m=document.createElement('div');
     m.className='key-marker';
-    m.style.background=colors[i];
+    m.style.background='transparent';
+    m.style.display='flex';
+    m.style.alignItems='center';
+    m.style.justifyContent='center';
+    m.style.fontSize='28px';
+    m.style.fontWeight='bold';
+    m.style.color='white';
     m.textContent=fm[notes[i]];
     overlay.appendChild(m);
   }
