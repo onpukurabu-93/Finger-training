@@ -98,6 +98,7 @@ h2 {
 .keyboard-section {
   margin-bottom: 30px;
   text-align: center;
+  position: relative;
 }
 
 .kaidan-image {
@@ -116,6 +117,38 @@ h2 {
 .kaidan-image:active {
   opacity: 0.7;
   transform: scale(0.98);
+}
+
+/* 指番号ガイド */
+.finger-guide {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.guide-item {
+  width: 60px;
+  text-align: center;
+}
+
+.guide-number {
+  width: 40px;
+  height: 40px;
+  background: #ff6b6b;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0 auto 5px;
+}
+
+.guide-label {
+  font-size: 12px;
+  color: #666;
 }
 
 /* コントロール */
@@ -186,5 +219,19 @@ h2 {
   
   .finger-name {
     font-size: 12px;
+  }
+  
+  .guide-item {
+    width: 50px;
+  }
+  
+  .guide-number {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+  
+  .guide-label {
+    font-size: 10px;
   }
 }
