@@ -40,49 +40,37 @@
             position: relative;
             display: inline-block;
             margin-top: 20px;
+            max-width: 100%;
         }
         .piano-image {
-            width: 600px;
-            height: 400px;
+            width: 100%;
+            max-width: 600px;
+            height: auto;
         }
         .keys {
             position: absolute;
             top: 0;
             left: 0;
-            width: 600px;
-            height: 400px;
+            width: 100%;
+            height: 100%;
         }
         .white-key {
             position: absolute;
-            width: 60px;
-            height: 300px;
-            background-color: white;
-            border: 2px solid #333;
-            border-radius: 0 0 5px 5px;
+            width: 12.5%;
+            height: 75%;
+            background-color: transparent;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            padding-bottom: 20px;
+            padding-bottom: 10%;
             font-size: 24px;
             font-weight: bold;
             color: #333;
             box-sizing: border-box;
         }
-        .white-key:hover {
-            background-color: #f0f0f0;
-        }
         .white-key.active {
-            background-color: #ffeb3b;
-        }
-        .black-key {
-            position: absolute;
-            width: 40px;
-            height: 180px;
-            background-color: black;
-            border: 2px solid #333;
-            border-radius: 0 0 5px 5px;
-            z-index: 1;
+            background-color: rgba(255, 235, 59, 0.5);
         }
         .message {
             margin-top: 20px;
@@ -98,8 +86,8 @@
 <body>
     <h1>ゆびトレ</h1>
     <div class="buttons">
+        <button id="leftHandBtn" onclick="startLeftHand()" style="display: none;">ひだりて</button>
         <button id="rightHandBtn" onclick="startRightHand()">みぎて</button>
-        <button id="leftHandBtn" onclick="startLeftHand()" disabled>ひだりて</button>
     </div>
     <div class="piano-container">
         <img src="1kaidan_0.png" alt="階段" class="piano-image">
@@ -121,64 +109,34 @@
             'C5': 523.25
         };
 
-        // チューリップの旋律（右手）
-        const rightHandMelody = [
+        // チューリップの旋律（リズム付き）
+        const melody = [
             { note: 'C4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
+            { note: 'E4', duration: 1.0 },
             { note: 'C4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
+            { note: 'E4', duration: 1.0 },
             { note: 'G4', duration: 0.5 },
             { note: 'E4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
             { note: 'C4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
             { note: 'E4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
+            { note: 'D4', duration: 1.0 },
             { note: 'C4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
+            { note: 'E4', duration: 1.0 },
             { note: 'C4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
+            { note: 'E4', duration: 1.0 },
             { note: 'G4', duration: 0.5 },
             { note: 'E4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
             { note: 'C4', duration: 0.5 },
             { note: 'D4', duration: 0.5 },
             { note: 'E4', duration: 0.5 },
-            { note: 'C4', duration: 0.5 }
-        ];
-
-        // チューリップの旋律（左手）
-        const leftHandMelody = [
-            { note: 'C4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'C4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'G4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'C4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'C4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'C4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'G4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'C4', duration: 0.5 },
-            { note: 'D4', duration: 0.5 },
-            { note: 'E4', duration: 0.5 },
-            { note: 'C4', duration: 0.5 }
+            { note: 'C4', duration: 1.0 }
         ];
 
         // 指番号（右手）
@@ -192,10 +150,10 @@
 
         // 現在の状態
         let currentMode = null;
-        let currentMelody = [];
         let currentFingerNumbers = [];
         let currentNoteIndex = 0;
         let isDemo = false;
+        let isChallenge = false;
         let audioContext = null;
         let retryTimer = null;
 
@@ -208,21 +166,10 @@
             for (let i = 0; i < 8; i++) {
                 const key = document.createElement('div');
                 key.className = 'white-key';
-                key.style.left = (i * 75) + 'px';
-                key.style.top = '100px';
+                key.style.left = (i * 12.5) + '%';
                 key.dataset.note = keyMapping[i];
                 key.dataset.index = i;
                 key.onclick = () => handleKeyPress(i);
-                keysContainer.appendChild(key);
-            }
-
-            // 黒鍵盤を作成（表示のみ）
-            const blackKeyPositions = [0, 1, 3, 4, 5];
-            for (let i = 0; i < 5; i++) {
-                const key = document.createElement('div');
-                key.className = 'black-key';
-                key.style.left = (blackKeyPositions[i] * 75 + 55) + 'px';
-                key.style.top = '100px';
                 keysContainer.appendChild(key);
             }
         }
@@ -249,8 +196,14 @@
             oscillator.stop(audioContext.currentTime + duration);
         }
 
+        // 音声を再生
+        function playVoice(filename) {
+            const audio = new Audio(filename);
+            audio.play();
+        }
+
         // デモ演奏
-        async function playDemo(melody, fingerNumbers) {
+        async function playDemo(fingerNumbers) {
             isDemo = true;
             currentNoteIndex = 0;
 
@@ -275,14 +228,19 @@
             }
 
             isDemo = false;
+            isChallenge = true;
+            
+            // 音声メッセージを再生
+            playVoice('voice103.mp3');
+            
             document.getElementById('message').textContent = 'チャレンジしてね！';
         }
 
         // 鍵盤を押したときの処理
         function handleKeyPress(noteIndex) {
-            if (isDemo || currentNoteIndex >= currentMelody.length) return;
+            if (isDemo || !isChallenge || currentNoteIndex >= melody.length) return;
 
-            const expectedNote = currentMelody[currentNoteIndex].note;
+            const expectedNote = melody[currentNoteIndex].note;
             const expectedNoteIndex = keyMapping.indexOf(expectedNote);
 
             if (noteIndex === expectedNoteIndex) {
@@ -293,10 +251,11 @@
 
                 currentNoteIndex++;
 
-                if (currentNoteIndex >= currentMelody.length) {
+                if (currentNoteIndex >= melody.length) {
                     // 全部弾き終わった
                     document.getElementById('message').textContent = 'すごい！成功！';
                     keys[noteIndex].classList.remove('active');
+                    isChallenge = false;
 
                     if (currentMode === 'right') {
                         // 右手モード成功
@@ -312,6 +271,7 @@
                 }
             } else {
                 // 間違った鍵盤を押した
+                playVoice('voice_104.mp3');
                 document.getElementById('message').textContent = '残念！もう一回！';
                 currentNoteIndex = 0;
             }
@@ -320,10 +280,10 @@
         // 右手モード開始
         function startRightHand() {
             currentMode = 'right';
-            currentMelody = rightHandMelody;
             currentFingerNumbers = rightHandFingerNumbers;
             currentNoteIndex = 0;
             isDemo = false;
+            isChallenge = false;
 
             document.getElementById('rightHandBtn').disabled = true;
             document.getElementById('leftHandBtn').disabled = true;
@@ -331,18 +291,16 @@
             document.getElementById('message').textContent = 'デモ演奏を聴いてね！';
 
             // デモ演奏
-            playDemo(rightHandMelody, rightHandFingerNumbers).then(() => {
-                document.getElementById('message').textContent = 'チャレンジしてね！';
-            });
+            playDemo(rightHandFingerNumbers);
         }
 
         // 左手モード開始
         function startLeftHand() {
             currentMode = 'left';
-            currentMelody = leftHandMelody;
             currentFingerNumbers = leftHandFingerNumbers;
             currentNoteIndex = 0;
             isDemo = false;
+            isChallenge = false;
 
             document.getElementById('rightHandBtn').disabled = true;
             document.getElementById('leftHandBtn').disabled = true;
@@ -350,9 +308,7 @@
             document.getElementById('message').textContent = 'デモ演奏を聴いてね！';
 
             // デモ演奏
-            playDemo(leftHandMelody, leftHandFingerNumbers).then(() => {
-                document.getElementById('message').textContent = 'チャレンジしてね！';
-            });
+            playDemo(leftHandFingerNumbers);
         }
 
         // もう一度やるボタン表示
@@ -363,6 +319,8 @@
             // 10 秒後に自動で左手モード
             retryTimer = setTimeout(() => {
                 retryBtn.style.display = 'none';
+                document.getElementById('leftHandBtn').style.display = 'inline-block';
+                document.getElementById('rightHandBtn').disabled = false;
                 startLeftHand();
             }, 10000);
         }
